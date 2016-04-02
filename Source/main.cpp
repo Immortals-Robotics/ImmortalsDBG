@@ -4,8 +4,6 @@
 
 #include <bgfx/bgfx.h>
 
-#include <SDL_main.h>
-
 SDL_Window* window;
 uint32_t m_width = 1280;
 uint32_t m_height = 720;

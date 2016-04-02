@@ -6,15 +6,15 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake/")
 
 set(DATA_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Data")
-set(DEP_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Deps")
+set(DEP_PATH "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty")
 
 add_definitions(-DDATA_PATH=${DATA_PATH})
 
 find_package(Bgfx REQUIRED)
 include_directories(${Bgfx_INCLUDE_DIRS})
 
-find_package(SDL REQUIRED)
-include_directories(${SDL_INCLUDE_DIR})
+find_package(SDL2 REQUIRED)
+include_directories(${SDL2_INCLUDE_DIR})
 #find_package(ZeroMQ REQUIRED)
 #include_directories(${ZeroMQ_INCLUDE_DIR})
 
@@ -72,4 +72,4 @@ endforeach()
 if(WIN32)
   target_link_libraries(ImmDBG wsock32)
 endif()
-target_link_libraries(ImmDBG ${PROTOBUF_LIBRARIES} ${Bgfx_LIBRARIES} ${SDL_LIBRARY})
+target_link_libraries(ImmDBG ${PROTOBUF_LIBRARIES} ${Bgfx_LIBRARIES} ${SDL2_LIBRARY})
