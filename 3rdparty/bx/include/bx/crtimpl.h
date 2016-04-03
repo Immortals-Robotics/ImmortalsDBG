@@ -7,7 +7,9 @@
 #define BX_CRTIMPL_H_HEADER_GUARD
 
 #if BX_CONFIG_ALLOCATOR_CRT
+#if BX_PLATFORM_WINDOWS
 #	include <malloc.h>
+#endif
 #	include "allocator.h"
 #endif // BX_CONFIG_ALLOCATOR_CRT
 

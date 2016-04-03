@@ -4,6 +4,7 @@
 #include "terminal_colors.h"
 #include <atomic>
 #include <cstdio>
+#include <cstdarg>
 
 #define BX_LOG(_Type, _Fmt, ...) bx::logPrintf(__FILE__, __LINE__, _Type, ##__VA_ARGS__)
 
