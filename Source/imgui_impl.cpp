@@ -16,7 +16,7 @@
 #   include "shaders/imgui.fsb.h"
 #   include "shaders/imgui.vsb.h"
 
-#define MAX_VERTICES 5000
+#define MAX_VERTICES 10000
 #define MAX_INDICES 10000
 
 #ifdef _DEBUG
@@ -211,23 +211,23 @@ int imguiInit(uint16_t viewWidth, uint16_t viewHeight)
     conf.MemAllocFn = imguiAlloc;
     conf.MemFreeFn = imguiFree;
 
-        conf.KeyMap[ImGuiKey_Tab] = SDLK_TAB;
-        conf.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
-        conf.KeyMap[ImGuiKey_RightArrow] = SDL_SCANCODE_RIGHT;
-        conf.KeyMap[ImGuiKey_UpArrow] = SDL_SCANCODE_UP;
-        conf.KeyMap[ImGuiKey_DownArrow] = SDL_SCANCODE_DOWN;
-        conf.KeyMap[ImGuiKey_Home] = SDL_SCANCODE_HOME;
-        conf.KeyMap[ImGuiKey_End] = SDL_SCANCODE_END;
-		conf.KeyMap[ImGuiKey_Delete] = SDLK_DELETE;
-		conf.KeyMap[ImGuiKey_Backspace] = SDLK_BACKSPACE;
-        conf.KeyMap[ImGuiKey_Enter] = SDLK_RETURN;
-        conf.KeyMap[ImGuiKey_Escape] = SDLK_ESCAPE;
-        conf.KeyMap[ImGuiKey_A] = SDLK_a;
-        conf.KeyMap[ImGuiKey_C] = SDLK_c;
-        conf.KeyMap[ImGuiKey_V] = SDLK_v;
-        conf.KeyMap[ImGuiKey_X] = SDLK_x;
-        conf.KeyMap[ImGuiKey_Y] = SDLK_y;
-        conf.KeyMap[ImGuiKey_Z] = SDLK_z;
+    conf.KeyMap[ImGuiKey_Tab] = SDLK_TAB;
+    conf.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
+    conf.KeyMap[ImGuiKey_RightArrow] = SDL_SCANCODE_RIGHT;
+    conf.KeyMap[ImGuiKey_UpArrow] = SDL_SCANCODE_UP;
+    conf.KeyMap[ImGuiKey_DownArrow] = SDL_SCANCODE_DOWN;
+    conf.KeyMap[ImGuiKey_Home] = SDL_SCANCODE_HOME;
+    conf.KeyMap[ImGuiKey_End] = SDL_SCANCODE_END;
+	conf.KeyMap[ImGuiKey_Delete] = SDLK_DELETE;
+	conf.KeyMap[ImGuiKey_Backspace] = SDLK_BACKSPACE;
+    conf.KeyMap[ImGuiKey_Enter] = SDLK_RETURN;
+    conf.KeyMap[ImGuiKey_Escape] = SDLK_ESCAPE;
+    conf.KeyMap[ImGuiKey_A] = SDLK_a;
+    conf.KeyMap[ImGuiKey_C] = SDLK_c;
+    conf.KeyMap[ImGuiKey_V] = SDLK_v;
+    conf.KeyMap[ImGuiKey_X] = SDLK_x;
+    conf.KeyMap[ImGuiKey_Y] = SDLK_y;
+    conf.KeyMap[ImGuiKey_Z] = SDLK_z;
 
     uint8_t* fontData;
     int fontWidth, fontHeight, bpp;
@@ -242,6 +242,8 @@ int imguiInit(uint16_t viewWidth, uint16_t viewHeight)
         return -1;
     }
     conf.Fonts->TexID = (void*)&gIm->fontTexHandle;
+
+	ImGui::GetStyle().AntiAliasedLines = false;
 
     ImGui::NewFrame();
 
