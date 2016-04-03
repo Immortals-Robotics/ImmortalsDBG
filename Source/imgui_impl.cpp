@@ -14,10 +14,8 @@
 #include <bxx/leakcheck_allocator.h>
 #include <SDL.h>
 
-#if BX_PLATFORM_WINDOWS
-#   include "shaders/build/Windows/fs_imgui.h"
-#   include "shaders/build/Windows/vs_imgui.h"
-#endif
+#   include "shaders/imgui.fsb.h"
+#   include "shaders/imgui.vsb.h"
 
 #define MAX_VERTICES 5000
 #define MAX_INDICES 10000
@@ -174,14 +172,14 @@ int imguiInit(uint16_t viewWidth, uint16_t viewHeight)
     VertexPosCoordColor::init();
 
     // Create Graphic objects
-    bgfx::ShaderHandle fragmentShader = bgfx::createShader(bgfx::makeRef(fs_imgui_h, sizeof(fs_imgui_h)));
+    bgfx::ShaderHandle fragmentShader = bgfx::createShader(bgfx::makeRef(imgui_fsb_h, sizeof(imgui_fsb_h)));
 	if (!IS_VALID(fragmentShader)) {
         BX_END_FATAL();
 		BX_FATAL("Creating fragment-shader failed");
         return -1;
     }
 
-	bgfx::ShaderHandle vertexShader = bgfx::createShader(bgfx::makeRef(vs_imgui_h, sizeof(vs_imgui_h)));
+	bgfx::ShaderHandle vertexShader = bgfx::createShader(bgfx::makeRef(imgui_vsb_h, sizeof(imgui_vsb_h)));
 	if (!IS_VALID(vertexShader)) {
         BX_END_FATAL();
 		BX_FATAL("Creating vertex-shader failed");

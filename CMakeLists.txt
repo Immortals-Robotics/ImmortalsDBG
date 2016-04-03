@@ -40,8 +40,8 @@ foreach(file ${GEN_VERTEX_SHADER_SRC})
     set(FILE_FRAG_ABS "${FILE_PATH}/${FILE_WE}.fsc")
     set(FILE_DEF_ABS "${FILE_PATH}/${FILE_WE}.def")
 
-    set(GEN_VERT_SHADER_FILE "${FILE_PATH}/${FILE_WE}_vs.h")
-    set(GEN_FRAG_SHADER_FILE "${FILE_PATH}/${FILE_WE}_fs.h")
+    set(GEN_VERT_SHADER_FILE "${FILE_PATH}/${FILE_WE}.vsb.h")
+    set(GEN_FRAG_SHADER_FILE "${FILE_PATH}/${FILE_WE}.fsb.h")
 
     file(RELATIVE_PATH GEN_VERT_SHADER_FILE_REL ${CMAKE_CURRENT_SOURCE_DIR} ${GEN_VERT_SHADER_FILE})
     file(RELATIVE_PATH GEN_FRAG_SHADER_FILE_REL ${CMAKE_CURRENT_SOURCE_DIR} ${GEN_FRAG_SHADER_FILE})
@@ -49,13 +49,17 @@ foreach(file ${GEN_VERTEX_SHADER_SRC})
     list(APPEND SHADER_HDRS ${GEN_VERT_SHADER_FILE_REL})
     list(APPEND SHADER_HDRS ${GEN_FRAG_SHADER_FILE_REL})
 
-    message(${GEN_VERT_SHADER_FILE})
-    message(${GEN_FRAG_SHADER_FILE})
+    set(ARGS_VERT -f ${FILE_VERT_ABS} -o ${GEN_VERT_SHADER_FILE} -i ${Bgfx_SHADER_INCLUDE_DIR} --bin2c --varyingdef ${FILE_DEF_ABS} --platform ${Bgfx_PLATFORM} --type vertex)
+    set(ARGS_FRAG -f ${FILE_FRAG_ABS} -o ${GEN_FRAG_SHADER_FILE} -i ${Bgfx_SHADER_INCLUDE_DIR} --bin2c --varyingdef ${FILE_DEF_ABS} --platform ${Bgfx_PLATFORM} --type fragment)
+    if(WIN32)
+      set(ARGS_VERT ${ARGS_VERT} --profile vs_4_0)
+      set(ARGS_FRAG ${ARGS_FRAG} --profile ps_4_0)
+    endif()
 
     add_custom_command(
       OUTPUT ${GEN_VERT_SHADER_FILE}
       COMMAND  ${Bgfx_SHADERC_EXECUTABLE}
-      ARGS -f ${FILE_VERT_ABS} -o ${GEN_VERT_SHADER_FILE} -i ${Bgfx_SHADER_INCLUDE_DIR} --bin2c --varyingdef ${FILE_DEF_ABS} --platform ${Bgfx_PLATFORM} --type vertex
+      ARGS ${ARGS_VERT}
       DEPENDS ${FILE_VERT_ABS}
       COMMENT "Running shaderc vertex compiler on ${FILE_VERT_ABS}"
       VERBATIM)
@@ -63,7 +67,7 @@ foreach(file ${GEN_VERTEX_SHADER_SRC})
     add_custom_command(
       OUTPUT ${GEN_FRAG_SHADER_FILE}
       COMMAND  ${Bgfx_SHADERC_EXECUTABLE}
-      ARGS -f ${FILE_FRAG_ABS} -o ${GEN_FRAG_SHADER_FILE} -i ${Bgfx_SHADER_INCLUDE_DIR} --bin2c --varyingdef ${FILE_DEF_ABS} --platform ${Bgfx_PLATFORM} --type fragment
+      ARGS ${ARGS_FRAG}
       DEPENDS ${FILE_FRAG_ABS}
       COMMENT "Running shaderc fragment compiler on ${FILE_FRAG_ABS}"
       VERBATIM)

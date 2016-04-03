@@ -17,8 +17,7 @@ void init()
 	SDL_Init(0);
 	window = SDL_CreateWindow("ImmView", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, m_width, m_height, 0);
 	bgfx::sdlSetWindow(window);
-
-	bgfx::init(bgfx::RendererType::Direct3D11);
+	bgfx::init(bgfx::RendererType::Count);
 	bgfx::reset(m_width, m_height, m_reset);
 
 	// Enable debug text.

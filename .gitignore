@@ -6,3 +6,5 @@ cmake_install.cmake
 install_manifest.txt
 Projects/
 .idea
+*.fsb.h
+*.vsb.h
