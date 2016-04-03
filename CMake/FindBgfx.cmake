@@ -52,12 +52,12 @@ find_library(Bgfx_LIBRARY_RELEASE
     set(Bgfx_LIBRARY
         debug ${Bgfx_LIBRARY_DEBUG}
         optimized ${Bgfx_LIBRARY_RELEASE})
-    if(MSCV)
-      list(APPEND Bgfx_LIBRARY
+    if(MSVC)
+      set(Bgfx_LIBRARY ${Bgfx_LIBRARY}
               debug psapi.lib
               optimized psapi.lib)
     elseif(APPLE)
-      list(APPEND Bgfx_LIBRARY
+      set(Bgfx_LIBRARY ${Bgfx_LIBRARY}
               debug ${METAL_LIB}
               optimized ${METAL_LIB}
               debug ${QUARTZ_CORE_LIB}
@@ -65,17 +65,17 @@ find_library(Bgfx_LIBRARY_RELEASE
     endif()
   elseif(Bgfx_LIBRARY_RELEASE)
     set(Bgfx_LIBRARY ${Bgfx_LIBRARY_RELEASE})
-    if(MSCV)
-      list(APPEND Bgfx_LIBRARY psapi.lib)
+    if(MSVC)
+      set(Bgfx_LIBRARY ${Bgfx_LIBRARY} psapi.lib)
     elseif(APPLE)
-      list(APPEND Bgfx_LIBRARY ${METAL_LIB} ${QUARTZ_CORE_LIB})
+      set(Bgfx_LIBRARY ${Bgfx_LIBRARY} ${METAL_LIB} ${QUARTZ_CORE_LIB})
     endif()
   elseif(Bgfx_LIBRARY_DEBUG)
     set(Bgfx_LIBRARY ${Bgfx_LIBRARY_DEBUG})
-    if(MSCV)
-      list(APPEND Bgfx_LIBRARY psapi.lib)
+    if(MSVC)
+      set(Bgfx_LIBRARY ${Bgfx_LIBRARY} psapi.lib)
     elseif(APPLE)
-      list(APPEND Bgfx_LIBRARY ${METAL_LIB} ${QUARTZ_CORE_LIB})
+      set(Bgfx_LIBRARY ${Bgfx_LIBRARY} ${METAL_LIB} ${QUARTZ_CORE_LIB})
     endif()
   endif()
 

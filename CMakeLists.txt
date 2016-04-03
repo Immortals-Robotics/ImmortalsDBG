@@ -10,11 +10,31 @@ set(DEP_PATH "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty")
 
 add_definitions(-DDATA_PATH=${DATA_PATH})
 
+if(MSVC)
+  set(CompilerFlags
+        CMAKE_CXX_FLAGS
+        CMAKE_CXX_FLAGS_DEBUG
+        CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_C_FLAGS
+        CMAKE_C_FLAGS_DEBUG
+        CMAKE_C_FLAGS_RELEASE
+        )
+  foreach(CompilerFlag ${CompilerFlags})
+    string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+  endforeach()
+  add_definitions(-D_ITERATOR_DEBUG_LEVEL=0)
+  add_definitions(-D_HAS_EXCEPTIONS=0)
+endif()
+
 find_package(Bgfx REQUIRED)
 include_directories(${Bgfx_INCLUDE_DIRS})
 
+if (MSVC)
+  set(SDL2_PATH ${DEP_PATH}/SDL2)
+endif()
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})
+
 #find_package(ZeroMQ REQUIRED)
 #include_directories(${ZeroMQ_INCLUDE_DIR})
 
@@ -53,11 +73,16 @@ endforeach()
 file(GLOB_RECURSE GEN_SOURCE_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Source/*.c" "Source/*.cpp" "/Source/*.cc" "/Source/*.cxx")
 file(GLOB_RECURSE GEN_HEADER_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Source/*.h" "Source/*.hpp")
 
+file(GLOB_RECURSE GEN_DEP_SOURCE_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "3rdparty/*.c" "3rdparty/*.cpp" "/3rdparty/*.cc" "/3rdparty/*.cxx")
+file(GLOB_RECURSE GEN_DEP_HEADER_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "3rdparty/*.h" "3rdparty/*.hpp")
+
 set(SOURCE_FILES
     ${GEN_HEADER_FILES}
     ${PROTO_HDRS}
+    ${GEN_DEP_HEADER_FILES}
     ${GEN_SOURCE_FILES}
-    ${PROTO_SRCS})
+    ${PROTO_SRCS}
+    ${GEN_DEP_SOURCE_FILES})
 
 add_executable(ImmDBG ${SOURCE_FILES})
 
@@ -69,7 +94,15 @@ foreach(FILE ${SOURCE_FILES})
   source_group(${GROUP} FILES ${FILE})
 endforeach()
 
-if(WIN32)
+if(MSVC)
   target_link_libraries(ImmDBG wsock32)
 endif()
 target_link_libraries(ImmDBG ${PROTOBUF_LIBRARIES} ${Bgfx_LIBRARIES} ${SDL2_LIBRARY})
+
+if (MSVC)
+  add_custom_command(
+    TARGET ImmDBG POST_BUILD                       # Adds a post-build event to ImmDBG
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different  # which executes "cmake - E copy_if_different..."
+    ${SDL2_DLL}                                    # <--this is in-file
+    $<TARGET_FILE_DIR:ImmDBG>)                     # <--this is out-file path
+endif()
