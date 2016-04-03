@@ -5,8 +5,9 @@
 
 #ifndef BX_READERWRITER_H_HEADER_GUARD
 #define BX_READERWRITER_H_HEADER_GUARD
-
+#if !BX_PLATFORM_WINDOWS
 #include <alloca.h>
+#endif
 #include <stdarg.h> // va_list
 #include <stdio.h>
 #include <string.h>

@@ -10,8 +10,7 @@
 
 #include <bx/allocator.h>
 
-#define STB_LEAKCHECK_IMPLEMENTATION
-#include <bxx/leakcheck_allocator.h>
+
 #include <SDL.h>
 
 #   include "shaders/imgui.fsb.h"
@@ -21,8 +20,11 @@
 #define MAX_INDICES 10000
 
 #ifdef _DEBUG
+#define STB_LEAKCHECK_IMPLEMENTATION
+#include <bxx/leakcheck_allocator.h>
 static bx::LeakCheckAllocator gAlloc;
 #else
+#include <bx/crtimpl.h>
 static bx::CrtAllocator gAlloc;
 #endif
 
