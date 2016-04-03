@@ -29,6 +29,29 @@ find_path(Bgfx_INCLUDE_DIR
         ${Bgfx_PKGCONF_INCLUDE_DIRS}
 )
 
+find_path(Bgfx_SHADER_INCLUDE_DIR
+  NAMES bgfx_shader.sh
+  HINTS ${Bgfx_ROOT_DIR}/shader_include)
+
+if (WIN32)
+  set(Bgfx_TMP_BIN_SUFFIX win32)
+elseif (APPLE)
+  set(Bgfx_TMP_BIN_SUFFIX osx)
+endif()
+
+# shaderc binary
+find_path(Bgfx_BIN_DIR
+  NAMES shaderc shaderc.exe
+  PATH_SUFFIXES ${Bgfx_TMP_BIN_SUFFIX}
+  HINTS ${Bgfx_ROOT_DIR}/bin
+)
+set(Bgfx_SHADERC_EXECUTABLE ${Bgfx_BIN_DIR}/shaderc)
+if (WIN32)
+  set(Bgfx_SHADERC_EXECUTABLE ${Bgfx_SHADERC_EXECUTABLE}.exe)
+endif()
+set(Bgfx_SHADERC_EXECUTABLE ${Bgfx_SHADERC_EXECUTABLE} CACHE STRING "Bgfx shaderc executable")
+set(Bgfx_BIN_DIR ${Bgfx_BIN_DIR} CACHE INTERNAL "")
+
 # Finally the library itself
 if(MSVC)
   set(Bgfx_LIB_HINT_SUFFIX lib/win32)
@@ -78,6 +101,12 @@ find_library(Bgfx_LIBRARY_RELEASE
       set(Bgfx_LIBRARY ${Bgfx_LIBRARY} ${METAL_LIB} ${QUARTZ_CORE_LIB})
     endif()
   endif()
+
+if (WIN32)
+  set(Bgfx_PLATFORM windows)
+elseif(APPLE)
+  set(Bgfx_PLATFORM osx)
+endif()
 
 # Set the include dir variables and the libraries and let libfind_process do the rest.
 # NOTE: Singular variables for this library, plural for libraries this this lib depends on.

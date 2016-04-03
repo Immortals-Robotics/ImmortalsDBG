@@ -29,6 +29,48 @@ endif()
 find_package(Bgfx REQUIRED)
 include_directories(${Bgfx_INCLUDE_DIRS})
 
+file(GLOB_RECURSE GEN_VERTEX_SHADER_SRC "Source/*.vsc")
+set(SHADER_HDRS)
+foreach(file ${GEN_VERTEX_SHADER_SRC})
+    get_filename_component(FILE_ABS ${file} ABSOLUTE)
+    get_filename_component(FILE_WE ${file} NAME_WE)
+    get_filename_component(FILE_PATH ${file} DIRECTORY)
+
+    set(FILE_VERT_ABS "${FILE_PATH}/${FILE_WE}.vsc")
+    set(FILE_FRAG_ABS "${FILE_PATH}/${FILE_WE}.fsc")
+    set(FILE_DEF_ABS "${FILE_PATH}/${FILE_WE}.def")
+
+    set(GEN_VERT_SHADER_FILE "${FILE_PATH}/${FILE_WE}_vs.h")
+    set(GEN_FRAG_SHADER_FILE "${FILE_PATH}/${FILE_WE}_fs.h")
+
+    file(RELATIVE_PATH GEN_VERT_SHADER_FILE_REL ${CMAKE_CURRENT_SOURCE_DIR} ${GEN_VERT_SHADER_FILE})
+    file(RELATIVE_PATH GEN_FRAG_SHADER_FILE_REL ${CMAKE_CURRENT_SOURCE_DIR} ${GEN_FRAG_SHADER_FILE})
+
+    list(APPEND SHADER_HDRS ${GEN_VERT_SHADER_FILE_REL})
+    list(APPEND SHADER_HDRS ${GEN_FRAG_SHADER_FILE_REL})
+
+    message(${GEN_VERT_SHADER_FILE})
+    message(${GEN_FRAG_SHADER_FILE})
+
+    add_custom_command(
+      OUTPUT ${GEN_VERT_SHADER_FILE}
+      COMMAND  ${Bgfx_SHADERC_EXECUTABLE}
+      ARGS -f ${FILE_VERT_ABS} -o ${GEN_VERT_SHADER_FILE} -i ${Bgfx_SHADER_INCLUDE_DIR} --bin2c --varyingdef ${FILE_DEF_ABS} --platform ${Bgfx_PLATFORM} --type vertex
+      DEPENDS ${FILE_VERT_ABS}
+      COMMENT "Running shaderc vertex compiler on ${FILE_VERT_ABS}"
+      VERBATIM)
+
+    add_custom_command(
+      OUTPUT ${GEN_FRAG_SHADER_FILE}
+      COMMAND  ${Bgfx_SHADERC_EXECUTABLE}
+      ARGS -f ${FILE_FRAG_ABS} -o ${GEN_FRAG_SHADER_FILE} -i ${Bgfx_SHADER_INCLUDE_DIR} --bin2c --varyingdef ${FILE_DEF_ABS} --platform ${Bgfx_PLATFORM} --type fragment
+      DEPENDS ${FILE_FRAG_ABS}
+      COMMENT "Running shaderc fragment compiler on ${FILE_FRAG_ABS}"
+      VERBATIM)
+endforeach()
+
+
+
 if (MSVC)
   set(SDL2_PATH ${DEP_PATH}/SDL2)
 endif()
@@ -82,7 +124,8 @@ set(SOURCE_FILES
     ${GEN_DEP_HEADER_FILES}
     ${GEN_SOURCE_FILES}
     ${PROTO_SRCS}
-    ${GEN_DEP_SOURCE_FILES})
+    ${GEN_DEP_SOURCE_FILES}
+    ${SHADER_HDRS})
 
 add_executable(ImmDBG ${SOURCE_FILES})
 
