@@ -6,6 +6,9 @@
 
 #include "imgui_impl.h"
 
+#include "drawing\field.h"
+#include "drawing\robot.h"
+
 SDL_Window* window;
 uint32_t m_width = 1280;
 uint32_t m_height = 720;
@@ -138,6 +141,15 @@ bool sdlPollEvents()
 	return true;
 }
 
+Field* field = new Field();
+Robot* robot = new Robot();
+float resize(ImVec2 wIdealSz) {
+	ImVec2 winSz = ImGui::GetWindowSize();
+	float min = winSz.x > winSz.y ? winSz.y : winSz.x;
+	bool x = min == winSz.x ? true : false;
+	ImVec2 ratio = ImVec2(winSz.x / wIdealSz.x, winSz.y / wIdealSz.y);
+	return x ? (ratio.x > ratio.y ? ratio.x : ratio.y) : (ratio.x > ratio.y ? ratio.y : ratio.x);
+}
 void update()
 {
 	int mx, my;
@@ -168,8 +180,25 @@ void update()
 	// This dummy draw call is here to make sure that view 0 is cleared
 	// if no other draw calls are submitted to view 0.
 	bgfx::touch(0);
-
+	
 	imguiNewFrame();
+	bool opened = true;
+	ImVec2 margin = ImVec2(20,20)*2;
+	ImVec2 wSize = ImVec2(680.0f, 460.0f)+margin;
+	// TODO: draw gui
+	ImGui::SetNextWindowSize(wSize, ImGuiSetCond_FirstUseEver);
+	if (!ImGui::Begin("Field", &opened))
+	{
+		ImGui::End();
+		return;
+	}
+	ImDrawList* draw_list = ImGui::GetWindowDrawList();
+	float zoom = 1.0f;// resize(wSize);
+	{
+		field->draw(draw_list, zoom);
+		robot->draw(draw_list, zoom);
+	}
+	ImGui::End();
 	imguiRender();
 
 	// Use debug font to print information about this example.
