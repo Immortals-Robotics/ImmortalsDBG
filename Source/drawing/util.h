@@ -67,3 +67,9 @@ void AddSegmetFilled(ImDrawList* x, const ImVec2& centre, float radius, ImU32 co
 	x->PathArcTo(centre, radius, a_max.x, a_max.y, num_segments);
 	x->PathFill(col);
 }
+
+
+enum Team {
+	Blue = 0,
+	Yellow = 1,
+};

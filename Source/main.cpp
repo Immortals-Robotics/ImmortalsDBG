@@ -142,7 +142,7 @@ bool sdlPollEvents()
 }
 
 Field* field = new Field();
-Robot* robot = new Robot(13);
+Robot** robot = new Robot*[5];
 float resize(ImVec2 wIdealSz) {
 	ImVec2 winSz = ImGui::GetWindowSize();
 	float min = winSz.x > winSz.y ? winSz.y : winSz.x;
@@ -196,7 +196,8 @@ void update()
 	float zoom = resize(wSize);
 	{
 		field->draw(draw_list, zoom);
-		robot->draw(draw_list, zoom);
+		for (int i = 0; i < 5; i++)
+			robot[i]->draw(draw_list, zoom);
 	}
 	ImGui::End();
 	imguiRender();
@@ -224,10 +225,18 @@ int main(int argc, char *argv[])
 	init();
 
 	bgfx::frame();
-	robot->put_degree(ImVec2(100, 100), 90);
+	for (int i = 0; i < 5; i++)
+	{
+		robot[i] = new Robot(i, Team::Blue);
+		robot[i]->put_degree(ImVec2(i*50, i*50), i*10);
+	}
+
 	while (sdlPollEvents())
 	{
-		robot->put_radian(robot->getPos() + ImVec2(0.1f, 0.07f), robot->getYaw_radian() + 0.1f);
+		for (int i = 0; i < 5; i++)
+		{
+			robot[i]->put_radian(robot[i]->getPos() + ImVec2(0.1f, 0.07f)*(i+1), robot[i]->getYaw_radian() + (i+1)*0.01f);
+		}
 		update();
 	}
 	shutdown();

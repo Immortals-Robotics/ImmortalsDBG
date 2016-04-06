@@ -76,7 +76,14 @@ public:
 		sprintf(fatigue, "%f", this->fatigue);
 		this->draw_list->PathArcTo(curPos, curRadius, this->rIdealSeg.x + this->rYaw, this->rIdealSeg.y + this->rYaw, 360);
 		this->draw_list->PathFill(ImColor(0, 0, 0, 100));
-		this->draw_list->AddText(ImGui::GetWindowFont(), ImGui::GetWindowFontSize()*2.0*zoom, curPos - ImVec2(curRadius / 3.0f, curRadius / 1.75f), ImColor(255, 255, 255, 255), rNum, NULL);
+		this->draw_list->AddText(
+			ImGui::GetWindowFont(), 
+			ImGui::GetWindowFontSize()*2.0*zoom, 
+			curPos - ImVec2(curRadius / 3.0f, curRadius / 1.75f), 
+			this->pattern[0], 
+			rNum, 
+			NULL
+			);
 		this->draw_list->AddRectFilled(
 			ImVec2(curPos.x - curRadius, curPos.y + curRadius + 2.0f*zoom),
 			ImVec2(curPos.x - curRadius + (this->battery > 1.0f ? 1.0f : (this->battery < 0.0f ? 0.0f : this->battery)) * 2 * curRadius, curPos.y + curRadius + 4.0f*zoom),
@@ -86,7 +93,7 @@ public:
 			ImVec2(curPos.x - curRadius + (this->fatigue > 1.0f ? 1.0f: (this->fatigue < 0.0f ? 0.0f : this->fatigue)) * 2 * curRadius, curPos.y + curRadius + 6.0f*zoom),
 			ImColor(255, 0, 0, 200));
 	}
-	Robot(int number) {
+	Robot(int number, Team team = Team::Blue) {
 		this->rIdealSeg = ImVec2(0.64159265358979323846f,IM_2PI - 0.64159265358979323846f);
 		this->radius = 20;
 		this->rIdealPos = ImVec2(0,0);
@@ -99,6 +106,7 @@ public:
 		{
 			pattern[i] = ImColor(255, 255, 255, 200);
 		}
+		this->pattern[0] = team ? ImColor(255, 255, 0, 200) : ImColor(0, 0, 255, 200);
 	}
 	~Robot() {
 		delete this->draw_list;
