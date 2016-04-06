@@ -27,7 +27,6 @@ class Robot {
 	float fatigue;
 	float battery;
 	float radius;
-	Field f;
 
 public:
 	void setNum(int num){}
