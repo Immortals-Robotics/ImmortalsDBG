@@ -5,6 +5,7 @@ Makefile
 cmake_install.cmake
 install_manifest.txt
 Projects/
+3rdparty/protobuf/
 .idea
 *.fsb.h
 *.vsb.h

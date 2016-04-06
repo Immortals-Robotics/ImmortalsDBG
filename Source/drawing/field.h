@@ -25,10 +25,10 @@ class Field {
 	}
 
 	void drawGZ(bool side, ImVec2 size, ImColor col = ImColor(255,255,255,200), ImVec2 offsetPos = ImVec2(0,0)) {
-		float u_min = side ? 1.505f : 1.005f;
-		float u_max = side ? 2.005f : 1.505f;
-		float b_min = side ? 0 : 0.505f;
-		float b_max = side ? 0.505f : 1.005f;
+		float u_min = side ? 1.500f : 1.000f;
+		float u_max = side ? 2.000f : 1.500f;
+		float b_min = side ? 0 : 0.500f;
+		float b_max = side ? 0.500f : 1.000f;
 		float radius = size.x*Field::fAspectRatio;
 		float x = side ? 0 : this->fIdealSz.x * Field::fAspectRatio;
 		if (side)
