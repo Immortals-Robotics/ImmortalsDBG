@@ -5,9 +5,10 @@
 #include <bgfx/bgfx.h>
 
 #include "imgui_impl.h"
-
-#include "drawing\field.h"
-#include "drawing\robot.h"
+#include <list>
+#include "drawing\Field.h"
+#include "drawing\Robot.h"
+#include "drawing\Ball.h"
 
 SDL_Window* window;
 uint32_t m_width = 1280;
@@ -141,8 +142,7 @@ bool sdlPollEvents()
 	return true;
 }
 
-Field* field = new Field();
-Robot** robot = new Robot*[5];
+
 float resize(ImVec2 wIdealSz) {
 	ImVec2 winSz = ImGui::GetWindowSize();
 	float min = winSz.x > winSz.y ? winSz.y : winSz.x;
@@ -150,7 +150,7 @@ float resize(ImVec2 wIdealSz) {
 	ImVec2 ratio = ImVec2(winSz.x / wIdealSz.x, winSz.y / wIdealSz.y);
 	return x ? (ratio.x > ratio.y ? ratio.x : ratio.y) : (ratio.x > ratio.y ? ratio.y : ratio.x);
 }
-void update()
+void update(std::list<IDrawable *>& drawables)
 {
 	int mx, my;
 	uint32_t mouseMask = SDL_GetMouseState(&mx, &my);
@@ -195,9 +195,12 @@ void update()
 	ImDrawList* draw_list = ImGui::GetWindowDrawList();
 	float zoom = resize(wSize);
 	{
-		field->draw(draw_list, zoom);
-		for (int i = 0; i < 5; i++)
-			robot[i]->draw(draw_list, zoom);
+		IDrawable * dummy;
+		for (auto it = drawables.begin(); it != drawables.end(); ++it)
+		{
+			//dummy = (*it);
+			(*it)->draw(draw_list, zoom, ImVec2(20.0f, 20.0f));
+		}
 	}
 	ImGui::End();
 	imguiRender();
@@ -225,19 +228,26 @@ int main(int argc, char *argv[])
 	init();
 
 	bgfx::frame();
+	Field* field = new Field();
+	Robot** robot = new Robot*[5];
+	Ball * ball = new Ball();
+	std::list<IDrawable *> drawables;
+	drawables.push_back(field);
 	for (int i = 0; i < 5; i++)
 	{
 		robot[i] = new Robot(i, Team::Blue);
-		robot[i]->put_degree(ImVec2(i*50, i*50), i*10);
+		robot[i]->put_degree(ImVec2(i*50.0f, i*50.0f), i*10.0f);
+		drawables.push_back(robot[i]);
 	}
+	drawables.push_back(ball);
 
 	while (sdlPollEvents())
 	{
 		for (int i = 0; i < 5; i++)
 		{
-			robot[i]->put_radian(robot[i]->getPos() + ImVec2(0.1f, 0.07f)*(i+1), robot[i]->getYaw_radian() + (i+1)*0.01f);
+			robot[i]->put_radian(robot[i]->getPos() + ImVec2(0.1f, 0.07f)*((float)i+1.0f), robot[i]->getYaw_radian() + ((float)i+1.0f)*0.05f);
 		}
-		update();
+		update(drawables);
 	}
 	shutdown();
 

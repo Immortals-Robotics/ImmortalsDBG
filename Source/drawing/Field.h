@@ -1,10 +1,14 @@
 #pragma once
 
 #include "../../3rdparty/imgui/imgui.h"
+#include "vectors.h"
+#include "colors.h"
 #include "util.h"
+#include "IDrawable.h"
 
 
-class Field {
+
+class Field : public IDrawable {
 
 	ImDrawList* draw_list;
 	float wAspectRatio;
@@ -110,18 +114,9 @@ public:
 	bool opened;
 	ImVec2 wSize;
 	ImVec2 fSize;
-	void draw(ImDrawList* draw_list, float zoom, ImVec2 margin = ImVec2(20.0f, 20.0f)) {
+	void draw(ImDrawList* draw_list, float zoom, ImVec2 margin) {
 		this->draw_list = draw_list;
 		Field::fAspectRatio = zoom;
-		
-		
-		/*
-		ImGui::Text("Primitives");
-		static float sz = 36.0f;
-		
-		ImGui::DragFloat("Size", &sz, 0.2f, 2.0f, 72.0f, "%.0f");
-		ImGui::ColorEdit3("Color", &col.x);
-		*/
 		const ImVec2 p = ImGui::GetCursorScreenPos();
 		const ImVec2 windowPos = (p + margin);
 		const ImVec2 fEnd = this->fIdealSz*Field::fAspectRatio;
@@ -137,22 +132,19 @@ public:
 		this->draw_list->AddCircleFilled(windowPos + (fEnd/2), this->midFieldCircleRadius * Field::fAspectRatio, this->lColor, 360);
 		this->draw_list->AddCircleFilled(windowPos + (fEnd / 2), this->midFieldCircleRadius * Field::fAspectRatio - this->lSz.x, darken(this->fColor, 0.3f), 360);
 		this->draw_list->AddRectFilled(windowPos + ImVec2((fEnd.x - this->lSz.x) / 2, 0), windowPos + ImVec2((fEnd.x + this->lSz.x) / 2, fEnd.y), this->lColor);
-
-
-		
 		// Goal zones
 		this->drawGZ(true, this->gzSz, this->lColor, windowPos);
 		this->drawGZ(false, this->gzSz, this->lColor, windowPos);
-		this->drawGZ(true, this->gzSz-this->lSz, darken(this->fColor, 0.3f), windowPos);
-		this->drawGZ(false, this->gzSz - this->lSz, darken(this->fColor, 0.3f), windowPos);
+		this->drawGZ(true, this->gzSz-this->lSz, this->fColor, windowPos);
+		this->drawGZ(false, this->gzSz - this->lSz, this->fColor, windowPos);
 		
 		return;
 	}
 
 	Field(const ImVec2& fIdealSz = ImVec2(680.0f, 460.0f), const ImVec2& wMargin = ImVec2(40.0f, 40.0f)) {
 		this->opened = true;
-		this->fColor = ImColor(0,255,0,200);
-		this->lColor = ImColor(255, 255, 255, 200);
+		this->fColor = IMC_GREEN;
+		this->lColor = IMC_WHITE;
 		this->lSz = ImVec2(3.0f,3.0f);
 		this->gzSz = ImVec2(70, 100);
 		this->midFieldCircleRadius = 40;
