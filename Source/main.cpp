@@ -6,9 +6,9 @@
 
 #include "imgui_impl.h"
 #include <list>
-#include "drawing\Field.h"
-#include "drawing\Robot.h"
-#include "drawing\Ball.h"
+#include "drawing/Field.h"
+#include "drawing/Robot.h"
+#include "drawing/Ball.h"
 
 SDL_Window* window;
 uint32_t m_width = 1280;

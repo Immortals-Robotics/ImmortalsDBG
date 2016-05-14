@@ -80,7 +80,7 @@ public:
 		char* rNum = new char();
 		//char* fatigue = new char[9];
 		//int x = strlen(fatigue);
-		sprintf_s(rNum, sizeof(rNum) ,"%x", this->number);
+		sprintf(rNum ,"%x", this->number);
 		//sprintf_s(fatigue, strlen(fatigue),"%f", this->fatigue);
 		//fatigue[8] = '\0';
 		this->draw_list->PathArcTo(curPos, curRadius, this->idealSeg.x + this->yaw, this->idealSeg.y + this->yaw, 360);
