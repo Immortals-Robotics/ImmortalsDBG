@@ -3,7 +3,6 @@
 #include <bgfx/bgfxplatform.h>
 
 #include <bgfx/bgfx.h>
-#include <zmq.h>
 
 #include "imgui_impl.h"
 #include "Protobuf/ImmortalsProtocols.pb.h"
@@ -20,36 +19,8 @@ void *subscriber;
 Ai2GuiMsg GUIMsg;
 float ball_speed = 0.0f;
 
-void ShowBallSpeed() {
-	const int buffer_size = 1000 * 1000;
-	char buffer[buffer_size];
-
-
-	int received_size = zmq_recv(subscriber, buffer, buffer_size, 0);
-
-	printf("Received ai debug blob of size %i\n", received_size);
-
-
-	GUIMsg.ParseFromArray(buffer, received_size);
-
-	ball_speed = GUIMsg.ballsdata().vmag();
-}
-
 void init()
 {
-	//  Socket to talk to server
-	printf ("Collecting updates from ai server…\n");
-	context = zmq_ctx_new ();
-	subscriber = zmq_socket (context, ZMQ_SUB);
-	int rc = zmq_connect (subscriber, "tcp://localhost:5556");
-	assert (rc == 0);
-
-	//  Subscribe to zipcode, default is NYC, 10001
-	char *filter = "";
-	rc = zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE,
-						 filter, strlen (filter));
-	assert (rc == 0);
-
 	SDL_Init(0);
 	window = SDL_CreateWindow("ImmView", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, m_width, m_height, 0);
 	bgfx::sdlSetWindow(window);
@@ -79,9 +50,6 @@ void shutdown()
 
 	SDL_DestroyWindow(window);
 	SDL_Quit();
-
-	zmq_close (subscriber);
-	zmq_ctx_destroy (context);
 }
 
 void sendImInputMouse(float mousePos[2], int mouseButtons[3], float mouseWheel)
@@ -179,7 +147,6 @@ bool sdlPollEvents()
 
 void update()
 {
-	ShowBallSpeed();
 	int mx, my;
 	uint32_t mouseMask = SDL_GetMouseState(&mx, &my);
 

@@ -9,3 +9,4 @@ Projects/
 *.fsb.h
 *.vsb.h
 *.pb.*
+3rdparty/protobuf/
