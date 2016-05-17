@@ -4,9 +4,9 @@
 #include "vectors.h"
 #include "colors.h"
 #include "util.h"
-#include "IDrawable.h"
+#include "Drawable.h"
 
-class Ball : public IDrawable {
+class Ball : public Drawable {
 	ImDrawList* draw_list; 
 	ImVec2 idealPos;
 	float radius;

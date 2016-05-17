@@ -4,7 +4,7 @@
 #include "vectors.h"
 #include "colors.h"
 #include "util.h"
-#include "IDrawable.h"
+#include "Drawable.h"
 
 #ifndef FAT_SPATIAL
 #define FAT_SPATIAL 0.00001f
@@ -16,7 +16,7 @@
 
 
 
-class Robot : public IDrawable {
+class Robot : public Drawable {
 	ImDrawList* draw_list;
 	int number;
 	ImColor pattern;

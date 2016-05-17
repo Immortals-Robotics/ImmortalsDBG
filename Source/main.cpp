@@ -149,7 +149,7 @@ float resize(ImVec2 wIdealSz) {
 	ImVec2 ratio = ImVec2(winSz.x / wIdealSz.x, winSz.y / wIdealSz.y);
 	return x ? (ratio.x > ratio.y ? ratio.x : ratio.y) : (ratio.x > ratio.y ? ratio.y : ratio.x);
 }
-void update(std::list<IDrawable *>& drawables)
+void update(std::list<Drawable *>& drawables)
 {
 	int mx, my;
 	uint32_t mouseMask = SDL_GetMouseState(&mx, &my);
@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
 	Field* field = new Field();
 	Robot** robot = new Robot*[5];
 	Ball * ball = new Ball();
-	std::list<IDrawable *> drawables;
+	std::list<Drawable *> drawables;
 	drawables.push_back(field);
 	for (int i = 0; i < 5; i++)
 	{
