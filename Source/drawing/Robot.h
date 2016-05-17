@@ -83,38 +83,43 @@ public:
 		sprintf(rNum ,"%x", this->number);
 		//sprintf_s(fatigue, strlen(fatigue),"%f", this->fatigue);
 		//fatigue[8] = '\0';
-		this->draw_list->PathArcTo(curPos, curRadius, this->idealSeg.x + this->yaw, this->idealSeg.y + this->yaw, 360);
+		this->draw_list->PathArcTo(curPos, curRadius, this->idealSeg.x + this->yaw, this->idealSeg.y + this->yaw, 18);
 		this->draw_list->PathFill(this->base);
 		this->draw_list->AddText(
 			ImGui::GetWindowFont(), 
-			ImGui::GetWindowFontSize()*2.0f*zoom, 
-			curPos - ImVec2(curRadius / 3.0f, curRadius / 1.75f), 
+			ImGui::GetWindowFontSize()*zoom,
+			curPos - ImVec2(curRadius / 3.0f, curRadius / 1.75f),
 			this->pattern, 
-			rNum, 
-			NULL
-			);
+			rNum,
+			NULL);
+
 		this->draw_list->AddRectFilled(
 			ImVec2(curPos.x - curRadius, curPos.y + curRadius + 2.0f*zoom),
-			ImVec2(curPos.x - curRadius + (this->battery > 1.0f ? 1.0f : (this->battery < 0.0f ? 0.0f : this->battery)) * 2 * curRadius, curPos.y + curRadius + 4.0f*zoom),
+			ImVec2(curPos.x - curRadius + (this->battery > 1.0f ? 1.0f : (this->battery < 0.0f ? 0.0f : this->battery)) * 2 * curRadius, curPos.y + curRadius + 6.0f*zoom),
 			this->stat[Stat::Battery]);
-		this->draw_list->AddRectFilled(
+
+		this->draw_list->AddRect(
+				ImVec2(curPos.x - curRadius, curPos.y + curRadius + 2.0f*zoom),
+				ImVec2(curPos.x + curRadius, curPos.y + curRadius + 6.0f*zoom),
+				IMC_BLACK);
+		/*this->draw_list->AddRectFilled(
 			ImVec2(curPos.x - curRadius, curPos.y + curRadius + 4.0f*zoom), 
 			ImVec2(curPos.x - curRadius + (this->fatigue > 1.0f ? 1.0f: (this->fatigue < 0.0f ? 0.0f : this->fatigue)) * 2 * curRadius, curPos.y + curRadius + 6.0f*zoom),
-			this->stat[Stat::Fatigue]);
+			this->stat[Stat::Fatigue]);*/
 	}
 
 	Robot(int number, Team team = Team::Blue) {
 		this->idealSeg = ImVec2(0.64159265358979323846f,IM_2PI - 0.64159265358979323846f);
-		this->radius = 20;
+		this->radius = 9;
 		this->idealPos = ImVec2(0,0);
 		this->number = number;
 		this->yaw = 0;
 		this->fatigue = 0.0f;
-		this->battery = 1.0f;
-		this->pattern = team ? IMC_YELLOW : IMC_BLUE;
-		this->base = IMC_BLACK;
+		this->battery = 0.7f;
+		this->pattern = team ? IMC_BLACK : IMC_WHITE;
+		this->base = team ? IMC_YELLOW : IMC_BLUE;
 		this->stat = new ImColor[2];
-		this->stat[Stat::Battery] = IMC_BLUE;
+		this->stat[Stat::Battery] = IMC_CYAN;
 		this->stat[Stat::Fatigue] = IMC_RED;
 	}
 	~Robot() {

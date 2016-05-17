@@ -181,7 +181,7 @@ void update(std::list<IDrawable *>& drawables)
 	bgfx::touch(0);
 	
 	imguiNewFrame();
-	bool opened = true;
+	static bool opened = true;
 	ImVec2 margin = ImVec2(30,30)*2;
 	ImVec2 wSize = ImVec2(900.f, 600.f)+margin;
 	// TODO: draw gui
@@ -189,31 +189,19 @@ void update(std::list<IDrawable *>& drawables)
 	if (!ImGui::Begin("Field", &opened))
 	{
 		ImGui::End();
-		return;
 	}
-	ImDrawList* draw_list = ImGui::GetWindowDrawList();
-	float zoom = resize(wSize);
-	{
-		IDrawable * dummy;
-		for (auto it = drawables.begin(); it != drawables.end(); ++it)
+	else {
+		ImDrawList *draw_list = ImGui::GetWindowDrawList();
+		float zoom = resize(wSize);
 		{
-			//dummy = (*it);
-			(*it)->draw(draw_list, zoom, ImVec2(20.0f, 20.0f));
+			for (auto it = drawables.begin(); it != drawables.end(); ++it) {
+				(*it)->draw(draw_list, zoom, ImVec2(20.0f, 20.0f));
+			}
 		}
+		ImGui::End();
 	}
-	ImGui::End();
+
 	imguiRender();
-
-	// Use debug font to print information about this example.
-	bgfx::dbgTextClear();
-	/*bgfx::dbgTextImage(bx::uint16_max(m_width / 2 / 8, 20) - 20
-		, bx::uint16_max(m_height / 2 / 16, 6) - 6
-		, 40
-		, 12
-		, s_logo
-		, 160
-	);*/
-
 
 	// Advance to next frame. Rendering thread will be kicked to
 	// process submitted rendering primitives.

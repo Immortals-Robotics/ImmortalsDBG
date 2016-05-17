@@ -115,7 +115,7 @@ public:
 
 	Field(const ImVec2& fIdealSz = ImVec2(900.0f, 600.0f), const ImVec2& wMargin = ImVec2(60.0f, 60.0f)) {
 		this->opened = true;
-		this->fColor = ImColor(0.0f, 0.55f, 0.0f);
+		this->fColor = IMC_GREEN;
 		this->lColor = IMC_WHITE;
 		this->lSz = ImVec2(3.0f,3.0f);
 		this->gzSz = ImVec2(70, 100);

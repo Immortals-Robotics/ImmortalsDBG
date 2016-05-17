@@ -25,12 +25,12 @@ public:
 		const ImVec2 windowPos = (p + margin);
 		ImVec2 curPos = windowPos + this->idealPos * zoom;
 		float curRadius = this->radius * zoom;
-		this->draw_list->AddCircleFilled(curPos, curRadius, this->color, 360);
+		this->draw_list->AddCircleFilled(curPos, curRadius, this->color, 10);
 		return;
 	}
 
 	Ball() {
-		this->radius = 5.0f;
+		this->radius = 2.15f;
 		this->idealPos = ImVec2(100,100);
 		this->color = IMC_ORANGE;
 	}
