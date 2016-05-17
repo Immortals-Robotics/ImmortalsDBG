@@ -5,16 +5,26 @@
 #include <bgfx/bgfx.h>
 
 #include "imgui_impl.h"
+<<<<<<< HEAD
 #include <list>
 #include "drawing/Field.h"
 #include "drawing/Robot.h"
 #include "drawing/Ball.h"
+=======
+#include "Protobuf/ImmortalsProtocols.pb.h"
+>>>>>>> network
 
 SDL_Window* window;
 uint32_t m_width = 1280;
 uint32_t m_height = 720;
 uint32_t m_debug = BGFX_DEBUG_TEXT;
 uint32_t m_reset = BGFX_RESET_VSYNC;
+
+void *context;
+void *subscriber;
+
+Ai2GuiMsg GUIMsg;
+float ball_speed = 0.0f;
 
 void init()
 {
@@ -181,6 +191,7 @@ void update(std::list<Drawable *>& drawables)
 	bgfx::touch(0);
 	
 	imguiNewFrame();
+<<<<<<< HEAD
 	static bool opened = true;
 	ImVec2 margin = ImVec2(30,30)*2;
 	ImVec2 wSize = ImVec2(900.f, 600.f)+margin;
@@ -200,6 +211,15 @@ void update(std::list<Drawable *>& drawables)
 		}
 		ImGui::End();
 	}
+=======
+
+	static bool opeeeeen = true;
+	ImGui::Begin("About ImGui", &opeeeeen, ImGuiWindowFlags_AlwaysAutoResize);
+	ImGui::Text("%.2f", ball_speed);
+	ImGui::End();
+
+	imguiRender();
+>>>>>>> network
 
 	imguiRender();
 
