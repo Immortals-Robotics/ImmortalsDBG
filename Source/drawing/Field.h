@@ -23,7 +23,7 @@ class Field : public IDrawable {
 	void resize() {
 		ImVec2 winSz = ImGui::GetWindowSize();
 		float min = winSz.x > winSz.y ? winSz.y : winSz.x;
-		bool x = min == winSz.x ? true : false;
+		bool x = (winSz.x < winSz.y);
 		this->wAspectRatio = x ? winSz.x / this->wIdealSz.x : winSz.y / this->wIdealSz.y;
 		Field::fAspectRatio = this->wAspectRatio;
 	}
@@ -45,17 +45,11 @@ class Field : public IDrawable {
 				ImVec2(u_min, u_max)*IM_PI,
 				360
 				);
-			this->draw_list->AddTriangleFilled(
-				offsetPos + ImVec2(x, (this->fIdealSz.y - size.y)*Field::fAspectRatio / 2),
-				offsetPos + ImVec2(x, ((this->fIdealSz.y - size.y)*Field::fAspectRatio / 2) - radius),
+			this->draw_list->AddLine(
 				offsetPos + ImVec2(radius, (this->fIdealSz.y - size.y)*Field::fAspectRatio / 2),
-				col
-				);
-			this->draw_list->AddRectFilled(
-				offsetPos + ImVec2(x, (this->fIdealSz.y - size.y)*Field::fAspectRatio / 2),
 				offsetPos + ImVec2(radius, (this->fIdealSz.y + size.y / 2)*Field::fAspectRatio / 2),
-				col
-				);
+				col,
+				1.f);
 			AddSegmetFilled(
 				this->draw_list,
 				offsetPos + ImVec2(x, (this->fIdealSz.y + size.y / 2)*Field::fAspectRatio / 2),
@@ -63,12 +57,6 @@ class Field : public IDrawable {
 				col,
 				ImVec2(b_min, b_max)*IM_PI,
 				360
-				);
-			this->draw_list->AddTriangleFilled(
-				offsetPos + ImVec2(x, (this->fIdealSz.y + size.y / 2)*Field::fAspectRatio / 2),
-				offsetPos + ImVec2(radius, (this->fIdealSz.y + size.y / 2)*Field::fAspectRatio / 2),
-				offsetPos + ImVec2(x, ((this->fIdealSz.y + size.y / 2)*Field::fAspectRatio / 2) + radius),
-				col
 				);
 		}
 		else {
@@ -78,19 +66,15 @@ class Field : public IDrawable {
 				radius,
 				col,
 				ImVec2(u_min, u_max)*IM_PI,
-				360
+				10
 				);
-			this->draw_list->AddTriangleFilled(
-				offsetPos + ImVec2(x, (this->fIdealSz.y - size.y)*Field::fAspectRatio / 2),
+
+			this->draw_list->AddLine(
 				offsetPos + ImVec2(x - radius, (this->fIdealSz.y - size.y)*Field::fAspectRatio / 2),
-				offsetPos + ImVec2(x, ((this->fIdealSz.y - size.y)*Field::fAspectRatio / 2) - radius),
-				col
-				);
-			this->draw_list->AddRectFilled(
-				offsetPos + ImVec2(x - radius, (this->fIdealSz.y - size.y)*Field::fAspectRatio / 2),
-				offsetPos + ImVec2(x, (this->fIdealSz.y + size.y / 2)*Field::fAspectRatio / 2),
-				col
-				);
+				offsetPos + ImVec2(x - radius, (this->fIdealSz.y + size.y / 2)*Field::fAspectRatio / 2),
+				col,
+				1.f);
+
 			AddSegmetFilled(
 				this->draw_list,
 				offsetPos + ImVec2(x, (this->fIdealSz.y + size.y / 2)*Field::fAspectRatio / 2),
@@ -98,12 +82,6 @@ class Field : public IDrawable {
 				col,
 				ImVec2(b_min, b_max)*IM_PI,
 				360
-				);
-			this->draw_list->AddTriangleFilled(
-				offsetPos + ImVec2(x, (this->fIdealSz.y + size.y / 2)*Field::fAspectRatio / 2),
-				offsetPos + ImVec2(x, ((this->fIdealSz.y + size.y / 2)*Field::fAspectRatio / 2) + radius),
-				offsetPos + ImVec2(x-radius, (this->fIdealSz.y + size.y / 2)*Field::fAspectRatio / 2),
-				col
 				);
 		}
 	}
@@ -120,34 +98,28 @@ public:
 		const ImVec2 p = ImGui::GetCursorScreenPos();
 		const ImVec2 windowPos = (p + margin);
 		const ImVec2 fEnd = this->fIdealSz*Field::fAspectRatio;
-		const float darkener = 1.0f;
+
 		// Field
-		this->draw_list->AddRectFilled(windowPos, windowPos + fEnd, this->fColor);
+		this->draw_list->AddRectFilled(windowPos - margin, windowPos + margin + fEnd, this->fColor);
 		// Field border
-		this->draw_list->AddRectFilled(windowPos, windowPos + ImVec2(fEnd.x, this->lSz.y), this->lColor);
-		this->draw_list->AddRectFilled(windowPos, windowPos+ImVec2(this->lSz.x, fEnd.y), this->lColor);
-		this->draw_list->AddRectFilled(windowPos + ImVec2(fEnd.x-this->lSz.x, 0), windowPos + fEnd, this->lColor);
-		this->draw_list->AddRectFilled(windowPos + ImVec2(0, fEnd.y - this->lSz.y), windowPos + fEnd, this->lColor);
+		this->draw_list->AddRect(windowPos, windowPos + ImVec2(fEnd.x, fEnd.y), this->lColor);
 		// Midline
-		this->draw_list->AddCircleFilled(windowPos + (fEnd/2), this->midFieldCircleRadius * Field::fAspectRatio, this->lColor, 360);
-		this->draw_list->AddCircleFilled(windowPos + (fEnd / 2), this->midFieldCircleRadius * Field::fAspectRatio - this->lSz.x, darken(this->fColor, 0.3f), 360);
-		this->draw_list->AddRectFilled(windowPos + ImVec2((fEnd.x - this->lSz.x) / 2, 0), windowPos + ImVec2((fEnd.x + this->lSz.x) / 2, fEnd.y), this->lColor);
+		this->draw_list->AddLine(windowPos + ImVec2(fEnd.x / 2.f, 0.f), windowPos + ImVec2(fEnd.x / 2.f, fEnd.y), this->lColor);
+		this->draw_list->AddCircle(windowPos + (fEnd/2), this->midFieldCircleRadius * Field::fAspectRatio, this->lColor, 360);
 		// Goal zones
 		this->drawGZ(true, this->gzSz, this->lColor, windowPos);
 		this->drawGZ(false, this->gzSz, this->lColor, windowPos);
-		this->drawGZ(true, this->gzSz-this->lSz, this->fColor, windowPos);
-		this->drawGZ(false, this->gzSz - this->lSz, this->fColor, windowPos);
 		
 		return;
 	}
 
-	Field(const ImVec2& fIdealSz = ImVec2(680.0f, 460.0f), const ImVec2& wMargin = ImVec2(40.0f, 40.0f)) {
+	Field(const ImVec2& fIdealSz = ImVec2(900.0f, 600.0f), const ImVec2& wMargin = ImVec2(60.0f, 60.0f)) {
 		this->opened = true;
-		this->fColor = IMC_GREEN;
+		this->fColor = ImColor(0.0f, 0.55f, 0.0f);
 		this->lColor = IMC_WHITE;
 		this->lSz = ImVec2(3.0f,3.0f);
 		this->gzSz = ImVec2(70, 100);
-		this->midFieldCircleRadius = 40;
+		this->midFieldCircleRadius = 50;
 		this->fIdealSz = fIdealSz;
 		this->wIdealSz = this->fIdealSz + wMargin;
 		this->fSize = this->fIdealSz;

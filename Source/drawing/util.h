@@ -23,7 +23,8 @@ void AddSegmetFilled(ImDrawList* x, const ImVec2& centre, float radius, ImU32 co
 
 	const ImVec2 a_max = (radian);// *((float)num_segments - 1.0f) / (float)num_segments;
 	x->PathArcTo(centre, radius, a_max.x, a_max.y, num_segments);
-	x->PathFill(col);
+	//x->PathFill(col);
+	x->PathStroke(col, false, 1.f);
 }
 
 

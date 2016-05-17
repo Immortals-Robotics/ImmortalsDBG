@@ -19,7 +19,7 @@ uint32_t m_reset = BGFX_RESET_VSYNC;
 void init()
 {
 	SDL_Init(0);
-	window = SDL_CreateWindow("ImmView", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, m_width, m_height, 0);
+	window = SDL_CreateWindow("ImmView", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, m_width, m_height, SDL_WINDOW_RESIZABLE);
 	bgfx::sdlSetWindow(window);
 	bgfx::init(bgfx::RendererType::Count);
 	bgfx::reset(m_width, m_height, m_reset);
@@ -145,8 +145,7 @@ bool sdlPollEvents()
 
 float resize(ImVec2 wIdealSz) {
 	ImVec2 winSz = ImGui::GetWindowSize();
-	float min = winSz.x > winSz.y ? winSz.y : winSz.x;
-	bool x = min == winSz.x ? true : false;
+	bool x = winSz.x < winSz.y;
 	ImVec2 ratio = ImVec2(winSz.x / wIdealSz.x, winSz.y / wIdealSz.y);
 	return x ? (ratio.x > ratio.y ? ratio.x : ratio.y) : (ratio.x > ratio.y ? ratio.y : ratio.x);
 }
@@ -183,8 +182,8 @@ void update(std::list<IDrawable *>& drawables)
 	
 	imguiNewFrame();
 	bool opened = true;
-	ImVec2 margin = ImVec2(20,20)*2;
-	ImVec2 wSize = ImVec2(680.0f, 460.0f)+margin;
+	ImVec2 margin = ImVec2(30,30)*2;
+	ImVec2 wSize = ImVec2(900.f, 600.f)+margin;
 	// TODO: draw gui
 	ImGui::SetNextWindowSize(wSize, ImGuiSetCond_FirstUseEver);
 	if (!ImGui::Begin("Field", &opened))
@@ -214,8 +213,7 @@ void update(std::list<IDrawable *>& drawables)
 		, s_logo
 		, 160
 	);*/
-	bgfx::dbgTextPrintf(0, 1, 0x4f, "bgfx/examples/00-helloworld");
-	bgfx::dbgTextPrintf(0, 2, 0x6f, "Description: Initialization and debug text.");
+
 
 	// Advance to next frame. Rendering thread will be kicked to
 	// process submitted rendering primitives.
