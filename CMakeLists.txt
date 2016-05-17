@@ -81,8 +81,8 @@ endif()
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})
 
-#find_package(ZeroMQ REQUIRED)
-#include_directories(${ZeroMQ_INCLUDE_DIR})
+find_package(ZeroMQ REQUIRED)
+include_directories(${ZeroMQ_INCLUDE_DIR})
 
 find_package(Protobuf REQUIRED)
 include_directories(${PROTOBUF_INCLUDE_DIRS})
@@ -144,7 +144,7 @@ endforeach()
 if(MSVC)
   target_link_libraries(ImmDBG wsock32)
 endif()
-target_link_libraries(ImmDBG ${PROTOBUF_LIBRARIES} ${Bgfx_LIBRARIES} ${SDL2_LIBRARY})
+target_link_libraries(ImmDBG ${PROTOBUF_LIBRARIES} ${Bgfx_LIBRARIES} ${SDL2_LIBRARY} ${ZeroMQ_LIBRARIES})
 
 if (MSVC)
   add_custom_command(

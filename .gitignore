@@ -8,3 +8,4 @@ Projects/
 .idea
 *.fsb.h
 *.vsb.h
+*.pb.*
