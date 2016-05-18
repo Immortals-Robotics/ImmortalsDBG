@@ -210,6 +210,8 @@ void update()
 		field_renderer->SetDrawList(draw_list);
 		field_renderer->DrawField(*ssl_field);
 		field_renderer->DrawBalls(ssl_packet->detection().balls());
+		field_renderer->DrawRobots(ssl_packet->detection().robots_blue(), Blue);
+		field_renderer->DrawRobots(ssl_packet->detection().robots_yellow(), Yellow);
 
 		ImGui::End();
 	}
@@ -247,6 +249,15 @@ int main(int argc, char *argv[])
 	auto ball = ssl_packet->mutable_detection()->add_balls();
 	ball->set_x(0.f);
 	ball->set_y(0.f);
+	
+
+	auto robot = ssl_packet->mutable_detection()->add_robots_blue();
+	robot->set_x(1500);
+	robot->set_confidence(0.7);
+	robot->set_orientation(1.5);
+	robot = ssl_packet->mutable_detection()->add_robots_yellow();
+	robot->set_y(2460);
+	robot->set_confidence(0.95);
 
 	while (sdlPollEvents())
 	{

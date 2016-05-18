@@ -56,6 +56,11 @@ struct ImDrawListScaled
 		drawList->AddText(offset + VerticalFlip * pos * scale, col, text_begin, text_end);
 	}
 
+	inline void  AddText(const ImFont* font, float font_size, const ImVec2& pos, ImU32 col, const char* text_begin, const char* text_end = NULL, float wrap_width = 0.0f, const ImVec4* cpu_fine_clip_rect = NULL)
+	{
+		drawList->AddText(font, font_size * scale * 10, offset + VerticalFlip * pos * scale, col, text_begin, text_end, wrap_width, cpu_fine_clip_rect);
+	}
+
 	// Stateful path API, add points then finish with PathFill() or PathStroke()
 	inline void  PathClear() const
 	{

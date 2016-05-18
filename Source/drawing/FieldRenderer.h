@@ -23,6 +23,9 @@ private:
 	ImVec2 widgetSize;
 	ImVec2 overallFieldSize;
 
+	const float ballRadius;
+	const float robotRadius;
+	const float robotArcAngle;
 
 	void CalculateZoom();
 
@@ -36,7 +39,7 @@ public:
 	void DrawCameraCalibrations(const google::protobuf::RepeatedPtrField<SSL_GeometryCameraCalibration>& data) const ;
 
 	void DrawBalls(const google::protobuf::RepeatedPtrField<SSL_DetectionBall>& data) const ;
-	/*void DrawRobots(const google::protobuf::RepeatedPtrField<SSL_DetectionRobot>& data, TeamColor color) const ;*/
+	void DrawRobots(const google::protobuf::RepeatedPtrField<SSL_DetectionRobot>& data, TeamColor color) const ;
 };
 
 

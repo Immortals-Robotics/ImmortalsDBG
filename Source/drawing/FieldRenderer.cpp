@@ -5,7 +5,10 @@
 #include "FieldRenderer.h"
 #include "colors.h"
 
-FieldRenderer::FieldRenderer()
+FieldRenderer::FieldRenderer() :
+	ballRadius(21.5f),
+	robotRadius(90.f),
+	robotArcAngle(0.85)
 {
 	this->drawList = new ImDrawListScaled();
 	// TODO: init field size according to the rules
