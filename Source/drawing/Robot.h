@@ -1,10 +1,10 @@
 #pragma once
 
 #include "../../3rdparty/imgui/imgui.h"
-#include "vectors.h"
+#include "../utility/vector_helper.h"
 #include "colors.h"
 #include "util.h"
-#include "Drawable.h"
+#include "IDrawable.h"
 
 #ifndef FAT_SPATIAL
 #define FAT_SPATIAL 0.00001f
@@ -14,9 +14,10 @@
 #define FAT_ANGULAR 0.0000001f
 #endif // !FAT_ANGULAR
 
+#include "FieldRenderer.h"
 
 
-class Robot : public Drawable {
+class Robot : public IDrawable {
 	ImDrawList* draw_list;
 	int number;
 	ImColor pattern;
@@ -108,7 +109,7 @@ public:
 			this->stat[Stat::Fatigue]);*/
 	}
 
-	Robot(int number, Team team = Team::Blue) {
+	Robot(int number, TeamColor team = TeamColor::Blue) {
 		this->idealSeg = ImVec2(0.64159265358979323846f,IM_2PI - 0.64159265358979323846f);
 		this->radius = 9;
 		this->idealPos = ImVec2(0,0);

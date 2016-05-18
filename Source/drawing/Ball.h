@@ -1,12 +1,12 @@
 #pragma once
 
 #include "../../3rdparty/imgui/imgui.h"
-#include "vectors.h"
+#include "../utility/vector_helper.h"
 #include "colors.h"
 #include "util.h"
-#include "Drawable.h"
+#include "IDrawable.h"
 
-class Ball : public Drawable {
+class Ball : public IDrawable {
 	ImDrawList* draw_list; 
 	ImVec2 idealPos;
 	float radius;

@@ -9,7 +9,9 @@
 #include "drawing/Field.h"
 #include "drawing/Robot.h"
 #include "drawing/Ball.h"
-#include "Protobuf/ImmortalsProtocols.pb.h"
+
+#include "protobuf/messages_robocup_ssl_wrapper.pb.h"
+#include "drawing/FieldRenderer.h"
 
 SDL_Window* window;
 uint32_t m_width = 1280;
@@ -17,11 +19,8 @@ uint32_t m_height = 720;
 uint32_t m_debug = BGFX_DEBUG_TEXT;
 uint32_t m_reset = BGFX_RESET_VSYNC;
 
-void *context;
-void *subscriber;
-
-Ai2GuiMsg GUIMsg;
-float ball_speed = 0.0f;
+SSL_GeometryFieldSize* ssl_field;
+FieldRenderer* field_renderer;
 
 void init()
 {
@@ -156,7 +155,7 @@ float resize(ImVec2 wIdealSz) {
 	ImVec2 ratio = ImVec2(winSz.x / wIdealSz.x, winSz.y / wIdealSz.y);
 	return x ? (ratio.x > ratio.y ? ratio.x : ratio.y) : (ratio.x > ratio.y ? ratio.y : ratio.x);
 }
-void update(std::list<Drawable *>& drawables)
+void update(std::list<IDrawable *>& drawables)
 {
 	int mx, my;
 	uint32_t mouseMask = SDL_GetMouseState(&mx, &my);
@@ -199,12 +198,17 @@ void update(std::list<Drawable *>& drawables)
 	}
 	else {
 		ImDrawList *draw_list = ImGui::GetWindowDrawList();
-		float zoom = resize(wSize);
+		/*float zoom = resize(wSize);
 		{
 			for (auto it = drawables.begin(); it != drawables.end(); ++it) {
 				(*it)->draw(draw_list, zoom, ImVec2(20.0f, 20.0f));
 			}
-		}
+		}*/
+
+		field_renderer->SetWidgetProperties(ImGui::GetWindowPos(), ImGui::GetWindowSize());
+		field_renderer->SetDrawList(draw_list);
+		field_renderer->DrawField(*ssl_field);
+
 		ImGui::End();
 	}
 
@@ -224,15 +228,26 @@ int main(int argc, char *argv[])
 	Field* field = new Field();
 	Robot** robot = new Robot*[5];
 	Ball * ball = new Ball();
-	std::list<Drawable *> drawables;
+	std::list<IDrawable *> drawables;
 	drawables.push_back(field);
 	for (int i = 0; i < 5; i++)
 	{
-		robot[i] = new Robot(i, Team::Blue);
+		robot[i] = new Robot(i, TeamColor ::Blue);
 		robot[i]->put_degree(ImVec2(i*50.0f, i*50.0f), i*10.0f);
 		drawables.push_back(robot[i]);
 	}
 	drawables.push_back(ball);
+
+	field_renderer = new FieldRenderer();
+
+	ssl_field = new SSL_GeometryFieldSize();
+	ssl_field->set_field_length(9000);
+	ssl_field->set_field_width(6000);
+	ssl_field->set_boundary_width(300);
+	ssl_field->set_referee_width(300);
+	ssl_field->set_center_circle_radius(500);
+
+	field_renderer->SetFieldSize(*ssl_field);
 
 	while (sdlPollEvents())
 	{

@@ -1,14 +1,14 @@
 #pragma once
 
 #include "../../3rdparty/imgui/imgui.h"
-#include "vectors.h"
+#include "../utility/vector_helper.h"
 #include "colors.h"
 #include "util.h"
-#include "Drawable.h"
+#include "IDrawable.h"
 
 
 
-class Field : public Drawable {
+class Field : public IDrawable {
 
 	ImDrawList* draw_list;
 	float midFieldCircleRadius;
@@ -101,7 +101,7 @@ public:
 	}
 
 	Field(const ImVec2& fIdealSz = ImVec2(900.0f, 600.0f), const ImVec2& wMargin = ImVec2(60.0f, 60.0f)) {
-		this->fieldColor = IMC_GREEN;
+		this->fieldColor = IMC_FIELD_GREEN;
 		this->lineColor = IMC_WHITE;
 		this->gzSz = ImVec2(70, 100);
 		this->midFieldCircleRadius = 50;

@@ -2,7 +2,7 @@
 
 #include "../../3rdparty/imgui/imgui.h"
 #include "colors.h"
-#include "vectors.h"
+#include "../utility/vector_helper.h"
 
 #ifndef IM_PI
 #define IM_PI					3.14159265358979323846f
@@ -26,9 +26,3 @@ void AddSegmetFilled(ImDrawList* x, const ImVec2& centre, float radius, ImU32 co
 	//x->PathFill(col);
 	x->PathStroke(col, false, 1.f);
 }
-
-
-enum Team {
-	Blue = 0,
-	Yellow = 1,
-};

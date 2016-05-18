@@ -1,0 +1,55 @@
+//
+// Created by lordhippo on 5/18/16.
+//
+
+#include "FieldRenderer.h"
+#include "colors.h"
+
+FieldRenderer::FieldRenderer()
+{
+	this->drawList = new ImDrawListScaled();
+	// TODO: init field size according to the rules
+	this->overallFieldSize = ImVec2(9600, 6600);
+
+	this->fieldColor = IMC_FIELD_GREEN;
+	this->lineColor = IMC_WHITE;
+}
+
+void FieldRenderer::SetDrawList(ImDrawList* const drawList)
+{
+	this->drawList->drawList = drawList;
+}
+
+void FieldRenderer::CalculateZoom()
+{
+	bool x = this->widgetSize.x < this->widgetSize.y;
+	ImVec2 ratio = ImVec2(this->widgetSize.x / overallFieldSize.x, this->widgetSize.y / overallFieldSize.y);
+	drawList->scale = x ? (ratio.x > ratio.y ? ratio.x : ratio.y) : (ratio.x > ratio.y ? ratio.y : ratio.x);
+}
+
+void FieldRenderer::SetWidgetProperties(const ImVec2 &pos, const ImVec2 &size)
+{
+	this->widgetPos = pos;
+	this->drawList->offset = pos;
+	this->widgetSize = size;
+
+	CalculateZoom();
+}
+
+void FieldRenderer::SetFieldSize(const SSL_GeometryFieldSize& field)
+{
+	this->overallFieldSize.x = field.field_length() + 2 * (field.boundary_width() + field.referee_width());
+	this->overallFieldSize.y = field.field_width() + 2* (field.boundary_width() + field.referee_width());
+
+	CalculateZoom();
+}
+
+
+
+
+
+
+
+
+
+
