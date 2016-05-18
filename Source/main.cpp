@@ -20,6 +20,7 @@ uint32_t m_debug = BGFX_DEBUG_TEXT;
 uint32_t m_reset = BGFX_RESET_VSYNC;
 
 SSL_GeometryFieldSize* ssl_field;
+SSL_WrapperPacket* ssl_packet;
 FieldRenderer* field_renderer;
 
 void init()
@@ -155,7 +156,7 @@ float resize(ImVec2 wIdealSz) {
 	ImVec2 ratio = ImVec2(winSz.x / wIdealSz.x, winSz.y / wIdealSz.y);
 	return x ? (ratio.x > ratio.y ? ratio.x : ratio.y) : (ratio.x > ratio.y ? ratio.y : ratio.x);
 }
-void update(std::list<IDrawable *>& drawables)
+void update()
 {
 	int mx, my;
 	uint32_t mouseMask = SDL_GetMouseState(&mx, &my);
@@ -208,6 +209,7 @@ void update(std::list<IDrawable *>& drawables)
 		field_renderer->SetWidgetProperties(ImGui::GetWindowPos() + ImGui::GetCursorPos(), ImGui::GetWindowSize() - ImGui::GetCursorPos() * 2.f);
 		field_renderer->SetDrawList(draw_list);
 		field_renderer->DrawField(*ssl_field);
+		field_renderer->DrawBalls(ssl_packet->detection().balls());
 
 		ImGui::End();
 	}
@@ -225,19 +227,7 @@ int main(int argc, char *argv[])
 	init();
 
 	bgfx::frame();
-	Field* field = new Field();
-	Robot** robot = new Robot*[5];
-	Ball * ball = new Ball();
-	std::list<IDrawable *> drawables;
-	drawables.push_back(field);
-	for (int i = 0; i < 5; i++)
-	{
-		robot[i] = new Robot(i, TeamColor ::Blue);
-		robot[i]->put_degree(ImVec2(i*50.0f, i*50.0f), i*10.0f);
-		drawables.push_back(robot[i]);
-	}
-	drawables.push_back(ball);
-
+	
 	field_renderer = new FieldRenderer();
 
 	ssl_field = new SSL_GeometryFieldSize();
@@ -253,13 +243,14 @@ int main(int argc, char *argv[])
 
 	field_renderer->SetFieldSize(*ssl_field);
 
+	ssl_packet = new SSL_WrapperPacket();
+	auto ball = ssl_packet->mutable_detection()->add_balls();
+	ball->set_x(0.f);
+	ball->set_y(0.f);
+
 	while (sdlPollEvents())
 	{
-		for (int i = 0; i < 5; i++)
-		{
-			robot[i]->put_radian(robot[i]->getPos() + ImVec2(0.1f, 0.07f)*((float)i+1.0f), robot[i]->getYaw_radian() + ((float)i+1.0f)*0.05f);
-		}
-		update(drawables);
+		update();
 	}
 	shutdown();
 

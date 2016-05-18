@@ -10,15 +10,17 @@
 void FieldRenderer::DrawField(const SSL_GeometryFieldSize& data) const
 {
 	// Field
+
+	auto lFieldBorderStartPos = ImVec2(-this->overallFieldSize.x / 2.f, +this->overallFieldSize.y / 2.f);
+	auto lFieldBorderEndPos = ImVec2(+this->overallFieldSize.x / 2.f, -this->overallFieldSize.y / 2.f);
+
 	this->drawList->AddRectFilled(
-		ImVec2(0.f, 0.f),
-		this->overallFieldSize,
+		lFieldBorderStartPos,
+		lFieldBorderEndPos,
 		IMC_FIELD_GREEN);
 
-	auto lFieldStartPos = ImVec2(
-		data.boundary_width(),
-		data.boundary_width());
-	auto lFieldEndPos = lFieldStartPos + ImVec2(data.field_length(), data.field_width());
+	auto lFieldStartPos = lFieldBorderStartPos + ImVec2(data.boundary_width(), -data.boundary_width());
+	auto lFieldEndPos = lFieldStartPos + ImVec2(data.field_length(), -data.field_width());
 	auto lFieldCenter = (lFieldStartPos + lFieldEndPos) / 2.f;
 
 	// Field border
@@ -28,11 +30,10 @@ void FieldRenderer::DrawField(const SSL_GeometryFieldSize& data) const
 		IMC_WHITE);
 
 	this->drawList->PathClear();
-	this->drawList->PathLineTo(ImVec2(data.boundary_width() - data.referee_width(), data.boundary_width() - data.referee_width()));
-	this->drawList->PathLineTo(ImVec2(data.boundary_width() + data.field_length() + data.referee_width(), data.boundary_width() - data.referee_width()));
-	this->drawList->PathLineTo(ImVec2(data.boundary_width() + data.field_length() + data.referee_width(), data.boundary_width() + data.field_width() + data.referee_width()));
-	this->drawList->PathLineTo(ImVec2(data.boundary_width() - data.referee_width(), data.boundary_width() + data.field_width() + data.referee_width()));
-
+	this->drawList->PathLineTo(lFieldBorderStartPos + ImVec2(data.boundary_width() - data.referee_width(), -data.boundary_width() + data.referee_width()));
+	this->drawList->PathLineTo(lFieldBorderStartPos + ImVec2(data.boundary_width() + data.field_length() + data.referee_width(), -data.boundary_width() + data.referee_width()));
+	this->drawList->PathLineTo(lFieldBorderStartPos + ImVec2(data.boundary_width() + data.field_length() + data.referee_width(), -data.boundary_width() - data.field_width() - data.referee_width()));
+	this->drawList->PathLineTo(lFieldBorderStartPos + ImVec2(data.boundary_width() - data.referee_width(), -data.boundary_width() - data.field_width() - data.referee_width()));
 	this->drawList->PathStroke(IMC_BLACK, true, 5.f);
 	
 	// Midline
@@ -49,14 +50,14 @@ void FieldRenderer::DrawField(const SSL_GeometryFieldSize& data) const
 	// TODO: Penalty area
 	this->drawList->PathClear();
 	this->drawList->PathArcTo(
-		ImVec2(lFieldStartPos.x, lFieldCenter.y - data.defense_stretch() / 2),
+		ImVec2(lFieldStartPos.x, lFieldCenter.y + data.defense_stretch() / 2),
 		data.defense_radius(),
 		-0.5f * IM_PI,
 		0.f);
 	this->drawList->PathLineTo(ImVec2(lFieldStartPos.x + data.defense_radius(),
-		lFieldCenter.y + data.defense_stretch() / 2));
+		lFieldCenter.y - data.defense_stretch() / 2));
 	this->drawList->PathArcTo(
-		ImVec2(lFieldStartPos.x, lFieldCenter.y + data.defense_stretch() / 2),
+		ImVec2(lFieldStartPos.x, lFieldCenter.y - data.defense_stretch() / 2),
 		data.defense_radius(),
 		0.f,
 		0.5f * IM_PI);
@@ -64,14 +65,14 @@ void FieldRenderer::DrawField(const SSL_GeometryFieldSize& data) const
 
 	this->drawList->PathClear();
 	this->drawList->PathArcTo(
-		ImVec2(lFieldEndPos.x, lFieldCenter.y - data.defense_stretch() / 2),
+		ImVec2(lFieldEndPos.x, lFieldCenter.y + data.defense_stretch() / 2),
 		data.defense_radius(),
 		-0.5f * IM_PI,
 		-1.f * IM_PI);
 	this->drawList->PathLineTo(ImVec2(lFieldEndPos.x - data.defense_radius(),
-		lFieldCenter.y + data.defense_stretch() / 2));
+		lFieldCenter.y - data.defense_stretch() / 2));
 	this->drawList->PathArcTo(
-		ImVec2(lFieldEndPos.x, lFieldCenter.y + data.defense_stretch() / 2),
+		ImVec2(lFieldEndPos.x, lFieldCenter.y - data.defense_stretch() / 2),
 		data.defense_radius(),
 		-1.f * IM_PI,
 		-1.5f * IM_PI);

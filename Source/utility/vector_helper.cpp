@@ -34,6 +34,13 @@ const ImVec4 operator -=(ImVec4& a, const ImVec4& b) {
 	return a = ImVec4(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
 }
 
+const ImVec2 operator -(const ImVec2& a) {
+	return ImVec2(-a.x, -a.y);
+}
+const ImVec4 operator -(const ImVec4& a) {
+	return ImVec4(-a.x, -a.y, -a.z, -a.w);
+}
+
 // Multiplications
 const ImVec2 operator *(const ImVec2& a, const ImVec2& b) {
 	return ImVec2(a.x * b.x, a.y * b.y);

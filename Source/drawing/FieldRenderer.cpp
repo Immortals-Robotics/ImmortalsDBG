@@ -27,7 +27,7 @@ void FieldRenderer::CalculateZoom()
 void FieldRenderer::SetWidgetProperties(const ImVec2 &pos, const ImVec2 &size)
 {
 	this->widgetPos = pos;
-	this->drawList->offset = pos;
+	this->drawList->offset = pos + size / 2.0f;
 	this->widgetSize = size;
 
 	CalculateZoom();

@@ -35,8 +35,8 @@ public:
 	void DrawField(const SSL_GeometryFieldSize& data) const ;
 	void DrawCameraCalibrations(const google::protobuf::RepeatedPtrField<SSL_GeometryCameraCalibration>& data) const ;
 
-	/*void DrawBalls(const google::protobuf::RepeatedPtrField<SSL_DetectionBall>& data) const ;
-	void DrawRobots(const google::protobuf::RepeatedPtrField<SSL_DetectionRobot>& data, TeamColor color) const ;*/
+	void DrawBalls(const google::protobuf::RepeatedPtrField<SSL_DetectionBall>& data) const ;
+	/*void DrawRobots(const google::protobuf::RepeatedPtrField<SSL_DetectionRobot>& data, TeamColor color) const ;*/
 };
 
 
