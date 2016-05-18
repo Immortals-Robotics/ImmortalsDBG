@@ -43,13 +43,3 @@ void FieldRenderer::SetFieldSize(const SSL_GeometryFieldSize& field)
 
 	CalculateZoom();
 }
-
-
-
-
-
-
-
-
-
-

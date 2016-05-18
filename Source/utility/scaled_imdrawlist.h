@@ -1,21 +1,107 @@
 #include "../../3rdparty/imgui/imgui.h"
+#include "vector_helper.h"
 
 struct ImDrawListScaled
 {
-	ImDrawListScaled();
-
 	ImDrawList* drawList;
 
 	ImVec2 offset;
 	float scale;
 
-	void  AddLineScaled(const ImVec2& a, const ImVec2& b, ImU32 col, float thickness = 1.0f);
-	void  AddRectScaled(const ImVec2& a, const ImVec2& b, ImU32 col, float rounding = 0.0f, int rounding_corners = 0x0F);        // a: upper-left, b: lower-right
-	void  AddRectFilledScaled(const ImVec2& a, const ImVec2& b, ImU32 col, float rounding = 0.0f, int rounding_corners = 0x0F);  // a: upper-left, b: lower-right
-	void  AddCircleScaled(const ImVec2& centre, float radius, ImU32 col, int num_segments = 12);
-	void  AddCircleFilledScaled(const ImVec2& centre, float radius, ImU32 col, int num_segments = 12);
-	void  AddTextScaled(const ImVec2& pos, ImU32 col, const char* text_begin, const char* text_end = NULL);
-	void AddSegmetScaled(const ImVec2 &centre, float radius, ImU32 col, ImVec2 radian, int num_segments);
+	ImDrawListScaled()
+	{
+		drawList = NULL;
+		offset = ImVec2(0.f, 0.f);
+		scale = 1.f;
+	}
 
-	void AddSegmetFilledScaled(const ImVec2 &centre, float radius, ImU32 col, ImVec2 radian, int num_segments);
+	// Primitives
+	inline void  AddLine(const ImVec2& a, const ImVec2& b, ImU32 col, float thickness = 1.0f) const
+	{
+		drawList->AddLine(offset + a * scale, offset + b * scale, col, thickness);
+	}
+
+	inline void  AddRect(const ImVec2& a, const ImVec2& b, ImU32 col, float rounding = 0.0f, int rounding_corners = 0x0F) const
+		// a: upper-left, b: lower-right
+	{
+		drawList->AddRect(offset + a * scale, offset + b * scale, col, rounding, rounding_corners);
+	}
+
+	inline void  AddRectFilled(const ImVec2& a, const ImVec2& b, ImU32 col, float rounding = 0.0f, int rounding_corners = 0x0F) const
+		// a: upper-left, b: lower-right
+	{
+		drawList->AddRectFilled(offset + a * scale, offset + b * scale, col, rounding, rounding_corners);
+	}
+
+	inline void  AddCircle(const ImVec2& centre, float radius, ImU32 col, int num_segments = 12) const
+	{
+		drawList->AddCircle(offset + centre * scale, radius * scale, col, num_segments);
+	}
+
+	inline void  AddCircleFilled(const ImVec2& centre, float radius, ImU32 col, int num_segments = 12) const
+	{
+		drawList->AddCircleFilled(offset + centre * scale, radius * scale, col, num_segments);
+	}
+
+	inline void  AddText(const ImVec2& pos, ImU32 col, const char* text_begin, const char* text_end = NULL) const
+	{
+		drawList->AddText(offset + pos * scale, col, text_begin, text_end);
+	}
+
+	inline void  AddSegmet(const ImVec2 &centre, float radius, float start_angle, float end_angle, ImU32 col, int num_segments) const
+	{
+		if ((col >> 24) == 0)
+			return;
+
+		drawList->PathArcTo(offset + centre * scale, radius * scale, start_angle, end_angle, num_segments);
+		drawList->PathStroke(col, false, 1.f);
+	}
+
+	inline void  AddSegmetFilled(const ImVec2 &centre, float radius, float start_angle, float end_angle, ImU32 col, int num_segments) const
+	{
+		if ((col >> 24) == 0)
+			return;
+
+		drawList->PathArcTo(offset + centre * scale, radius * scale, start_angle, end_angle, num_segments);
+		drawList->PathFill(col);
+	}
+
+
+	// Stateful path API, add points then finish with PathFill() or PathStroke()
+	inline void  PathClear() const
+	{
+		drawList->PathClear();
+	}
+	inline void  PathLineTo(const ImVec2& pos) const
+	{
+		drawList->PathLineTo(offset + pos * scale);
+	}
+	inline void  PathLineToMergeDuplicate(const ImVec2& pos) const
+	{
+		drawList->PathLineToMergeDuplicate(offset + pos * scale);
+	}
+	inline void  PathFill(ImU32 col) const
+	{
+		drawList->PathFill(col);
+	}
+	inline void  PathStroke(ImU32 col, bool closed, float thickness = 1.0f) const
+	{
+		drawList->PathStroke(col, closed, thickness);
+	}
+	inline void  PathArcTo(const ImVec2& centre, float radius, float a_min, float a_max, int num_segments = 10) const
+	{
+		drawList->PathArcTo(offset + centre * scale, radius * scale, a_min, a_max, num_segments);
+	}
+	inline void  PathArcToFast(const ImVec2& centre, float radius, int a_min_of_12, int a_max_of_12) const
+	{
+		drawList->PathArcToFast(offset + centre * scale, radius * scale, a_min_of_12, a_max_of_12);
+	}
+	inline void  PathBezierCurveTo(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, int num_segments = 0) const
+	{
+		drawList->PathBezierCurveTo(offset + p1 * scale, offset + p2 * scale, offset + p3 * scale, num_segments);
+	}
+	inline void  PathRect(const ImVec2& rect_min, const ImVec2& rect_max, float rounding = 0.0f, int rounding_corners = 0x0F) const
+	{
+		drawList->PathRect(offset + rect_min * scale, offset + rect_max * scale, rounding, rounding_corners);
+	}
 };

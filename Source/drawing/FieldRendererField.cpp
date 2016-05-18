@@ -9,7 +9,7 @@
 void FieldRenderer::DrawField(const SSL_GeometryFieldSize& data) const
 {
 	// Field
-	this->drawList->AddRectFilledScaled(
+	this->drawList->AddRectFilled(
 			ImVec2(0.f, 0.f),
 			this->overallFieldSize,
 			this->fieldColor);
@@ -20,16 +20,16 @@ void FieldRenderer::DrawField(const SSL_GeometryFieldSize& data) const
 	auto lFieldCenter = (lFieldStartPos+lFieldEndPos) / 2.f;
 
 	// Field border
-	this->drawList->AddRectScaled(
+	this->drawList->AddRect(
 			this->widgetPos + lFieldStartPos,
 			this->widgetPos + lFieldEndPos,
 			this->lineColor);
 	// Midline
-	this->drawList->AddLineScaled(
+	this->drawList->AddLine(
 			this->widgetPos + ImVec2(lFieldCenter.x, lFieldStartPos.y),
 			this->widgetPos + ImVec2(lFieldCenter.x, lFieldEndPos.y),
 			this->lineColor);
-	this->drawList->AddCircleScaled(
+	this->drawList->AddCircle(
 			this->widgetPos + lFieldCenter,
 			data.center_circle_radius(),
 			this->lineColor,
