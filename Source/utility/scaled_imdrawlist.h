@@ -1,6 +1,13 @@
 #include "../../3rdparty/imgui/imgui.h"
 #include "vector_helper.h"
 
+#ifndef IM_PI
+#define IM_PI					3.14159265358979323846f
+#endif // !
+#ifndef IM_2PI
+#define IM_2PI					6.28318530717958647692f
+#endif // !
+
 struct ImDrawListScaled
 {
 	ImDrawList* drawList;

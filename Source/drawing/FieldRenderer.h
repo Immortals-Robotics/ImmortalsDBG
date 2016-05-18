@@ -18,9 +18,6 @@ enum TeamColor {
 
 class FieldRenderer {
 private:
-	ImColor fieldColor;
-	ImColor lineColor;
-
 	ImDrawListScaled* drawList;
 	ImVec2 widgetPos;
 	ImVec2 widgetSize;

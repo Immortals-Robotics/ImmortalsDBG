@@ -205,7 +205,7 @@ void update(std::list<IDrawable *>& drawables)
 			}
 		}*/
 
-		field_renderer->SetWidgetProperties(ImGui::GetWindowPos(), ImGui::GetWindowSize());
+		field_renderer->SetWidgetProperties(ImGui::GetWindowPos() + ImGui::GetCursorPos(), ImGui::GetWindowSize() - ImGui::GetCursorPos() * 2.f);
 		field_renderer->SetDrawList(draw_list);
 		field_renderer->DrawField(*ssl_field);
 
@@ -243,9 +243,13 @@ int main(int argc, char *argv[])
 	ssl_field = new SSL_GeometryFieldSize();
 	ssl_field->set_field_length(9000);
 	ssl_field->set_field_width(6000);
-	ssl_field->set_boundary_width(300);
+	ssl_field->set_boundary_width(700);
 	ssl_field->set_referee_width(300);
 	ssl_field->set_center_circle_radius(500);
+	ssl_field->set_defense_radius(1000);
+	ssl_field->set_defense_stretch(500);
+	ssl_field->set_goal_width(1000);
+	ssl_field->set_goal_depth(180);
 
 	field_renderer->SetFieldSize(*ssl_field);
 

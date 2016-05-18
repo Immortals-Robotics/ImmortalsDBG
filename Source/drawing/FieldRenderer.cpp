@@ -10,9 +10,6 @@ FieldRenderer::FieldRenderer()
 	this->drawList = new ImDrawListScaled();
 	// TODO: init field size according to the rules
 	this->overallFieldSize = ImVec2(9600, 6600);
-
-	this->fieldColor = IMC_FIELD_GREEN;
-	this->lineColor = IMC_WHITE;
 }
 
 void FieldRenderer::SetDrawList(ImDrawList* const drawList)
@@ -38,8 +35,8 @@ void FieldRenderer::SetWidgetProperties(const ImVec2 &pos, const ImVec2 &size)
 
 void FieldRenderer::SetFieldSize(const SSL_GeometryFieldSize& field)
 {
-	this->overallFieldSize.x = field.field_length() + 2 * (field.boundary_width() + field.referee_width());
-	this->overallFieldSize.y = field.field_width() + 2* (field.boundary_width() + field.referee_width());
+	this->overallFieldSize.x = field.field_length() + 2 * (field.boundary_width());
+	this->overallFieldSize.y = field.field_width() + 2* (field.boundary_width());
 
 	CalculateZoom();
 }
