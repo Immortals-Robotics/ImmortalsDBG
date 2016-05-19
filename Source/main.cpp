@@ -6,9 +6,6 @@
 
 #include "imgui_impl.h"
 #include <list>
-#include "drawing/Field.h"
-#include "drawing/Robot.h"
-#include "drawing/Ball.h"
 
 #include "protobuf/messages_robocup_ssl_wrapper.pb.h"
 #include "drawing/FieldRenderer.h"
