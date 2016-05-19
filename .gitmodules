@@ -1,0 +1,3 @@
+[submodule "Source/protos"]
+	path = Source/protos
+	url = git@github.com:lordhippo/ImmortalsProtos.git
