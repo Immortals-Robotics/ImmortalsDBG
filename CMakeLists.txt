@@ -109,6 +109,9 @@ include_directories(${ZeroMQ_INCLUDE_DIR})
 find_package(Protobuf REQUIRED)
 include_directories(${PROTOBUF_INCLUDE_DIRS})
 
+find_package(FlatBuffers REQUIRED)
+include_directories(${FLATBUFFERS_INCLUDE_DIR})
+
 file(GLOB_RECURSE GEN_PROTO_DEF "Source/*.proto")
 
 set(PROTO_SRCS)

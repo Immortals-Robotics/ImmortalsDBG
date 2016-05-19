@@ -6,24 +6,31 @@
 
 #include "imgui_impl.h"
 #include <list>
+#include <thread>
 
-#include "protobuf/messages_robocup_ssl_wrapper.pb.h"
+#include "protos/messages_robocup_ssl_wrapper.pb.h"
 #include "drawing/FieldRenderer.h"
 
+#include "utility/network/robocup_ssl_client.h"
+
 SDL_Window* window;
-uint32_t m_width = 1280;
-uint32_t m_height = 720;
-uint32_t m_debug = BGFX_DEBUG_TEXT;
+uint32_t m_width = 1600;
+uint32_t m_height = 900;
+uint32_t m_debug = BGFX_DEBUG_TEXT | BGFX_DEBUG_STATS;
 uint32_t m_reset = BGFX_RESET_VSYNC;
 
 SSL_GeometryFieldSize* ssl_field;
 SSL_WrapperPacket* ssl_packet;
+SSL_WrapperPacket* ssl_packet_off;
 FieldRenderer* field_renderer;
+RoboCupSSLClient* sslClient;
+
+mutex vision_mutex;
 
 void init()
 {
 	SDL_Init(0);
-	window = SDL_CreateWindow("ImmView", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, m_width, m_height, SDL_WINDOW_RESIZABLE);
+	window = SDL_CreateWindow("ImmortalsDBG", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, m_width, m_height, SDL_WINDOW_RESIZABLE);
 	bgfx::sdlSetWindow(window);
 	bgfx::init(bgfx::RendererType::Count);
 	bgfx::reset(m_width, m_height, m_reset);
@@ -206,9 +213,12 @@ void update()
 		field_renderer->SetWidgetProperties(ImGui::GetWindowPos() + ImGui::GetCursorPos(), ImGui::GetWindowSize() - ImGui::GetCursorPos() * 2.f);
 		field_renderer->SetDrawList(draw_list);
 		field_renderer->DrawField(*ssl_field);
+
+		vision_mutex.lock();
 		field_renderer->DrawBalls(ssl_packet->detection().balls());
 		field_renderer->DrawRobots(ssl_packet->detection().robots_blue(), Blue);
 		field_renderer->DrawRobots(ssl_packet->detection().robots_yellow(), Yellow);
+		vision_mutex.unlock();
 
 		ImGui::End();
 	}
@@ -218,6 +228,11 @@ void update()
 	// Advance to next frame. Rendering thread will be kicked to
 	// process submitted rendering primitives.
 	bgfx::frame();
+
+}
+
+void receiveVision()
+{
 
 }
 
@@ -242,6 +257,7 @@ int main(int argc, char *argv[])
 
 	field_renderer->SetFieldSize(*ssl_field);
 
+	ssl_packet_off = new SSL_WrapperPacket();
 	ssl_packet = new SSL_WrapperPacket();
 	auto ball = ssl_packet->mutable_detection()->add_balls();
 	ball->set_x(0.f);
@@ -256,11 +272,46 @@ int main(int argc, char *argv[])
 	robot->set_y(2460);
 	robot->set_confidence(0.95);
 
+	sslClient = new RoboCupSSLClient();
+	sslClient->open(true);
+
+	bool running = true;
+
+	auto vision_func = [&]()
+	{
+		map<uint32_t, SSL_DetectionFrame> frame_map;
+		SSL_WrapperPacket tmp_ssl_packet;
+
+		while (running) {
+			sslClient->receive(tmp_ssl_packet);
+
+			if (tmp_ssl_packet.has_detection())
+			{
+				auto detection = tmp_ssl_packet.detection();
+				frame_map[detection.camera_id()] = detection;
+			}
+
+			ssl_packet_off->clear_detection();
+			for(auto detection: frame_map)
+			{
+				ssl_packet_off->mutable_detection()->MergeFrom(detection.second);
+			}
+
+			vision_mutex.lock();
+			swap(ssl_packet, ssl_packet_off);
+			vision_mutex.unlock();
+		}
+	};
+
+	thread vision_thread(vision_func);
+
 	while (sdlPollEvents())
 	{
 		update();
 	}
-	shutdown();
 
+	running = false;
+	shutdown();
+	vision_thread.join();
 	return 0;
 }

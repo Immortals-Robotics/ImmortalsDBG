@@ -7,8 +7,8 @@
 
 
 #include "../../3rdparty/imgui/imgui.h"
-#include "../protobuf/messages_robocup_ssl_geometry.pb.h"
-#include "../protobuf/messages_robocup_ssl_detection.pb.h"
+#include "../protos/messages_robocup_ssl_geometry.pb.h"
+#include "../protos/messages_robocup_ssl_detection.pb.h"
 #include "../utility/scaled_imdrawlist.h"
 
 enum TeamColor {
