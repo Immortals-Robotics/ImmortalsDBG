@@ -96,14 +96,15 @@ void ImGui::ShowTestWindow(bool* p_opened)
 	//************************************************************************Viewer
 	ImGuiWindowFlags window_flags2 = 0;
 	window_flags2 |= ImGuiWindowFlags_ShowBorders;
-	window_flags2 |= ImGuiWindowFlags_NoCollapse;
+	//window_flags2 |= ImGuiWindowFlags_NoCollapse;
 
 	ImGui::Begin("Status Viewer",0 , window_flags2);//ImGuiWindowFlags_AlwaysAutoResize
-	if (ImGui::TreeNode("Control"))
+	ImGui::Text("View");
+	if (ImGui::TreeNode("Control View"))
 	{
 		static int robotNumber;
 		ImGui::Text("Robot Number:"); ImGui::SameLine();
-		ImGui::InputInt("", &robotNumber);
+		ImGui::InputInt(" ", &robotNumber);
 		if (robotNumber < 1)
 			robotNumber = 1;
 
@@ -113,33 +114,43 @@ void ImGui::ShowTestWindow(bool* p_opened)
 		{
 			ImGuiIO& io = ImGui::GetIO();
 			for (int i = 0; i < IM_ARRAYSIZE(io.KeysDown); i++)
+			{
 				if (ImGui::IsKeyPressed(i))
 				{
 					switch (i)
 					{
 					case 79://right
-						ImGui::Text("right key");
+						ImGui::SameLine(); ImGui::Text("right key");
 						break;
 					case 80://left
-						ImGui::Text("left key");
+						ImGui::SameLine(); ImGui::Text("left key");
 						break;
 					case 81://down
-						ImGui::Text("down key");
+						ImGui::SameLine(); ImGui::Text("down key");
 						break;
 					case 82://up
-						ImGui::Text("up key");
+						ImGui::SameLine(); ImGui::Text("up key");
 						break;
-					case 32://space
-						ImGui::Text("space");
+					case 32://space for cheap
+						ImGui::SameLine(); ImGui::Text("space");
 						break;
-					case 13://enter
-						ImGui::Text("enter");
+					case 13://enter for kick
+						ImGui::SameLine(); ImGui::Text("enter");
+						break;
+					case 98://'B' for buzzer
+						ImGui::SameLine(); ImGui::Text("Buzzer");
 						break;
 					default:
-						ImGui::Text("invalid key");
+						ImGui::SameLine(); ImGui::Text("invalid key");
 						break;
 					}
 				}
+			}
+		}
+		if (ImGui::TreeNode("Motor Diagram"))
+		{
+
+			ImGui::TreePop();
 		}
 		ImGui::TreePop();
 	}

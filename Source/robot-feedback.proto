@@ -1,0 +1,25 @@
+message PID {
+	required float P = 1;
+	required float I = 2;
+	required float D = 3;
+}
+
+message Constans {
+	optional float gyro_offset = 1;
+	optional uint32 button_status = 2;
+	optional PID pid = 3;
+}
+
+message RobotFeedback {
+  required uint32	robot_id		=  1;
+  optional float	battery_voltage	=  2;
+  optional float	cap_voltage		=  3;
+  optional bool		dribbe_connected=  4;
+  optional bool		ball_detected	=  5;
+  repeated bool		motor_fault		=  6;
+  repeated bool		encoder_fault	=  7;
+  optional bool		gyro_yaw		=  8;
+  repeated float 	motor_vel		=  9;
+  repeated float 	motor_set_point	=  10;
+  optional PID		pid				=  11; 
+}
