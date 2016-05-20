@@ -615,6 +615,7 @@ namespace bgfx
 			float translation[3];       //!< Eye translation.
 			float fov[4];               //!< Field of view (up, down, left, right).
 			float viewOffset[3];        //!< Eye view matrix translation adjustment.
+			float projection[16];       //!< Eye projection matrix
 			float pixelsPerTanAngle[2]; //!<
 		};
 
@@ -639,6 +640,9 @@ namespace bgfx
 		uint64_t gpuTimeBegin; //!< GPU frame begin time.
 		uint64_t gpuTimeEnd;   //!< GPU frame end time.
 		uint64_t gpuTimerFreq; //!< GPU timer frequency.
+
+		int64_t waitRender;    //!< Render wait time.
+		int64_t waitSubmit;    //!< Submit wait time.
 	};
 
 	/// Vertex declaration.
@@ -1914,7 +1918,7 @@ namespace bgfx
 	///
 	void setViewRect(uint8_t _id, uint16_t _x, uint16_t _y, uint16_t _width, uint16_t _height);
 
-    /// @attention C99 equivalent is `bgfx_set_view_rect_auto`.
+	/// @attention C99 equivalent is `bgfx_set_view_rect_auto`.
 	///
 	void setViewRect(uint8_t _id, uint16_t _x, uint16_t _y, BackbufferRatio::Enum _ratio);
 
@@ -2164,7 +2168,8 @@ namespace bgfx
 	///
 	/// @param[in] _handle Uniform.
 	/// @param[in] _value Pointer to uniform data.
-	/// @param[in] _num Number of elements.
+	/// @param[in] _num Number of elements. Passing `UINT16_MAX` will
+	///   use the _num passed on uniform creation.
 	///
 	/// @attention C99 equivalent is `bgfx_set_uniform`.
 	///

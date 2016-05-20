@@ -4,7 +4,7 @@ include("${CMAKE_SOURCE_DIR}/CMake/Helpers.cmake")
 
 set_project_paths()
 enable_parallel_build()
-enable_cpp11_support()
+enable_cpp14_support()
 
 find_package(Bgfx REQUIRED)
 include_directories(${Bgfx_INCLUDE_DIRS})

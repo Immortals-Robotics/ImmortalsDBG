@@ -1,14 +1,14 @@
 # CMake helper macros
 # Ali Salehi, Spring 2016
 
-macro(enable_cpp11_support)
+macro(enable_cpp14_support)
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-      message(STATUS "Adding -std=c++11")
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+      message(STATUS "Adding -std=c++14")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
   endif()
   if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
-      message(STATUS "Adding -std=c11")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
+      message(STATUS "Adding -std=c14")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c14")
   endif()
 endmacro()
 

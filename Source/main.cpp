@@ -18,6 +18,7 @@ SDL_Window* window;
 uint32_t m_width = 1600;
 uint32_t m_height = 900;
 uint32_t m_debug = BGFX_DEBUG_TEXT | BGFX_DEBUG_STATS;
+uint32_t m_debug = BGFX_DEBUG_TEXT;
 uint32_t m_reset = BGFX_RESET_VSYNC;
 
 RoboCup2014Legacy::Geometry::SSL_GeometryFieldSize* ssl_field;
@@ -204,12 +205,6 @@ void update()
 	}
 	else {
 		ImDrawList *draw_list = ImGui::GetWindowDrawList();
-		/*float zoom = resize(wSize);
-		{
-			for (auto it = drawables.begin(); it != drawables.end(); ++it) {
-				(*it)->draw(draw_list, zoom, ImVec2(20.0f, 20.0f));
-			}
-		}*/
 
 		field_renderer->SetWidgetProperties(ImGui::GetWindowPos() + ImGui::GetCursorPos(), ImGui::GetWindowSize() - ImGui::GetCursorPos() * 2.f);
 		field_renderer->SetDrawList(draw_list);
@@ -276,7 +271,7 @@ int main(int argc, char *argv[])
 	sslClient = new RoboCupSSLClient();
 	sslClient->open(true);
 
-	atomic<bool> running = true;
+	atomic<bool> running(true);
 
 	auto vision_func = [&]()
 	{
