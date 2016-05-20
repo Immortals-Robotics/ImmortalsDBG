@@ -7,7 +7,7 @@
 
 
 #include "../../3rdparty/imgui/imgui.h"
-#include "../protos/messages_robocup_ssl_geometry.pb.h"
+#include "../protos/messages_robocup_ssl_geometry_legacy.pb.h"
 #include "../protos/messages_robocup_ssl_detection.pb.h"
 #include "../utility/scaled_imdrawlist.h"
 
@@ -33,9 +33,9 @@ public:
 	FieldRenderer();
 	void SetDrawList(ImDrawList* const drawList);
 	void SetWidgetProperties(const ImVec2 &pos, const ImVec2 &size);
-	void SetFieldSize(const SSL_GeometryFieldSize& field);
+	void SetFieldSizeLegacy(const RoboCup2014Legacy::Geometry::SSL_GeometryFieldSize& field);
 
-	void DrawField(const SSL_GeometryFieldSize& data) const ;
+	void DrawFieldLegacy(const RoboCup2014Legacy::Geometry::SSL_GeometryFieldSize& data) const ;
 	void DrawCameraCalibrations(const google::protobuf::RepeatedPtrField<SSL_GeometryCameraCalibration>& data) const ;
 
 	void DrawBalls(const google::protobuf::RepeatedPtrField<SSL_DetectionBall>& data) const ;

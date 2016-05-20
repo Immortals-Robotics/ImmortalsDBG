@@ -1,105 +1,17 @@
 cmake_minimum_required(VERSION 3.0)
 project(ImmDBG)
+include("${CMAKE_SOURCE_DIR}/CMake/Helpers.cmake")
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake/")
-
-set(DATA_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Data")
-set(DEP_PATH "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty")
-
-add_definitions(-DDATA_PATH=${DATA_PATH})
-
-if(MSVC)
-  set(CompilerFlags
-        CMAKE_CXX_FLAGS
-        CMAKE_CXX_FLAGS_DEBUG
-        CMAKE_CXX_FLAGS_RELEASE
-        CMAKE_C_FLAGS
-        CMAKE_C_FLAGS_DEBUG
-        CMAKE_C_FLAGS_RELEASE
-        )
-  foreach(CompilerFlag ${CompilerFlags})
-    set(${CompilerFlag} "${${CompilerFlag}} /MP")
-  endforeach()
-  message(STATUS "Added parallel build arguments to CMAKE_*_FLAGS")
-elseif(${CMAKE_GENERATOR} MATCHES "Unix Makefiles")
-  message(STATUS ${CMAKE_BUILD_TOOL})
-  include(ProcessorCount)
-  ProcessorCount(CORES_COUNT)
-  if(CORES_COUNT EQUAL 0)
-    set(CORES_COUNT 4)
-    message(STATUS "Failed to determine cpu cores, using 4")
-  else()
-    message(STATUS "Found ${CORES_COUNT} cpu cores")
-  endif()
-    set(CMAKE_MAKE_PROGRAM "${CMAKE_MAKE_PROGRAM} -j${CORES_COUNT}")
-    message(STATUS "Added parallel build arguments to CMAKE_MAKE_PROGRAM")
-endif()
-
-message(${CMAKE_CXX_COMPILER_ID})
-message(${CMAKE_C_COMPILER_ID})
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-    message(STATUS "Adding -std=c++11")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-endif()
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
-    message(STATUS "Adding -std=c11")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
-endif()
+set_project_paths()
+enable_parallel_build()
+enable_cpp11_support()
 
 find_package(Bgfx REQUIRED)
 include_directories(${Bgfx_INCLUDE_DIRS})
 
 file(GLOB_RECURSE GEN_VERTEX_SHADER_SRC "Source/*.vsc")
-set(SHADER_HDRS)
-foreach(file ${GEN_VERTEX_SHADER_SRC})
-    get_filename_component(FILE_ABS ${file} ABSOLUTE)
-    get_filename_component(FILE_WE ${file} NAME_WE)
-    get_filename_component(FILE_PATH ${file} DIRECTORY)
+add_shader_generate_command(GEN_VERTEX_SHADER_SRC SHADER_HDRS)
 
-    set(FILE_VERT_ABS "${FILE_PATH}/${FILE_WE}.vsc")
-    set(FILE_FRAG_ABS "${FILE_PATH}/${FILE_WE}.fsc")
-    set(FILE_DEF_ABS "${FILE_PATH}/${FILE_WE}.def")
-
-    set(GEN_VERT_SHADER_FILE "${FILE_PATH}/${FILE_WE}.vsb.h")
-    set(GEN_FRAG_SHADER_FILE "${FILE_PATH}/${FILE_WE}.fsb.h")
-
-    file(RELATIVE_PATH GEN_VERT_SHADER_FILE_REL ${CMAKE_CURRENT_SOURCE_DIR} ${GEN_VERT_SHADER_FILE})
-    file(RELATIVE_PATH GEN_FRAG_SHADER_FILE_REL ${CMAKE_CURRENT_SOURCE_DIR} ${GEN_FRAG_SHADER_FILE})
-
-    list(APPEND SHADER_HDRS ${GEN_VERT_SHADER_FILE_REL})
-    list(APPEND SHADER_HDRS ${GEN_FRAG_SHADER_FILE_REL})
-
-    set(ARGS_VERT -f ${FILE_VERT_ABS} -o ${GEN_VERT_SHADER_FILE} -i ${Bgfx_SHADER_INCLUDE_DIR} --bin2c --varyingdef ${FILE_DEF_ABS} --platform ${Bgfx_PLATFORM} --type vertex)
-    set(ARGS_FRAG -f ${FILE_FRAG_ABS} -o ${GEN_FRAG_SHADER_FILE} -i ${Bgfx_SHADER_INCLUDE_DIR} --bin2c --varyingdef ${FILE_DEF_ABS} --platform ${Bgfx_PLATFORM} --type fragment)
-    if(WIN32)
-      set(ARGS_VERT ${ARGS_VERT} --profile vs_4_0)
-      set(ARGS_FRAG ${ARGS_FRAG} --profile ps_4_0)
-    endif()
-
-    add_custom_command(
-      OUTPUT ${GEN_VERT_SHADER_FILE}
-      COMMAND  ${Bgfx_SHADERC_EXECUTABLE}
-      ARGS ${ARGS_VERT}
-      DEPENDS ${FILE_VERT_ABS}
-      COMMENT "Running shaderc vertex compiler on ${FILE_VERT_ABS}"
-      VERBATIM)
-
-    add_custom_command(
-      OUTPUT ${GEN_FRAG_SHADER_FILE}
-      COMMAND  ${Bgfx_SHADERC_EXECUTABLE}
-      ARGS ${ARGS_FRAG}
-      DEPENDS ${FILE_FRAG_ABS}
-      COMMENT "Running shaderc fragment compiler on ${FILE_FRAG_ABS}"
-      VERBATIM)
-endforeach()
-
-
-
-if (MSVC)
-  set(SDL2_PATH "${DEP_PATH}/SDL2")
-  set(PROTOBUF_SRC_ROOT_FOLDER "${DEP_PATH}/protobuf")
-  set(ZeroMQ_ROOT_DIR "${DEP_PATH}/zeromq")  
-endif()
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})
 
@@ -109,37 +21,9 @@ include_directories(${ZeroMQ_INCLUDE_DIR})
 find_package(Protobuf REQUIRED)
 include_directories(${PROTOBUF_INCLUDE_DIRS})
 
-find_package(FlatBuffers REQUIRED)
-include_directories(${FLATBUFFERS_INCLUDE_DIR})
+file(GLOB_RECURSE GEN_PROTO_DEF "*.proto")
 
-file(GLOB_RECURSE GEN_PROTO_DEF "Source/*.proto")
-
-set(PROTO_SRCS)
-set(PROTO_HDRS)
-
-foreach(file ${GEN_PROTO_DEF})
-    get_filename_component(FILE_ABS ${file} ABSOLUTE)
-    get_filename_component(FILE_WE ${file} NAME_WE)
-    get_filename_component(FILE_PATH ${file} DIRECTORY)
-
-    set(GEN_FILE_HEADER "${FILE_PATH}/${FILE_WE}.pb.h")
-    set(GEN_FILE_SOURCE "${FILE_PATH}/${FILE_WE}.pb.cc")
-
-    file(RELATIVE_PATH GEN_FILE_HEADER_REL ${CMAKE_CURRENT_SOURCE_DIR} ${GEN_FILE_HEADER})
-    file(RELATIVE_PATH GEN_FILE_SOURCE_REL ${CMAKE_CURRENT_SOURCE_DIR} ${GEN_FILE_SOURCE})
-
-    list(APPEND PROTO_SRCS ${GEN_FILE_SOURCE_REL})
-    list(APPEND PROTO_HDRS ${GEN_FILE_HEADER_REL})
-
-    add_custom_command(
-      OUTPUT ${GEN_FILE_SOURCE}
-             ${GEN_FILE_HEADER}
-      COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
-      ARGS --proto_path=${FILE_PATH} --cpp_out=${FILE_PATH} ${FILE_ABS}
-      DEPENDS ${FILE_ABS}
-      COMMENT "Running C++ protocol buffer compiler on ${file}" 
-      VERBATIM )
-endforeach()
+add_protobuf_generate_command(GEN_PROTO_DEF PROTO_SRCS PROTO_HDRS)
 
 file(GLOB_RECURSE GEN_SOURCE_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Source/*.c" "Source/*.cpp" "/Source/*.cc" "/Source/*.cxx")
 file(GLOB_RECURSE GEN_HEADER_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Source/*.h" "Source/*.hpp")
@@ -158,16 +42,10 @@ set(SOURCE_FILES
 
 add_executable(ImmDBG ${SOURCE_FILES})
 
-foreach(FILE ${SOURCE_FILES})
-  get_filename_component(PARENT_DIR "${FILE}" DIRECTORY)
-
-  string(REPLACE "/" "\\\\" GROUP "${PARENT_DIR}")
-
-  source_group(${GROUP} FILES ${FILE})
-endforeach()
+set_files_group(SOURCE_FILES)
 
 if(MSVC)
-  target_link_libraries(ImmDBG wsock32)
+  target_link_libraries(ImmDBG wsock32 ws2_32)
 endif()
 target_link_libraries(ImmDBG ${PROTOBUF_LIBRARIES} ${Bgfx_LIBRARIES} ${SDL2_LIBRARY} ${ZeroMQ_LIBRARIES})
 

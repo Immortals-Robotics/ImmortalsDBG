@@ -7,6 +7,7 @@
 #include "imgui_impl.h"
 #include <list>
 #include <thread>
+#include <atomic>
 
 #include "protos/messages_robocup_ssl_wrapper.pb.h"
 #include "drawing/FieldRenderer.h"
@@ -19,7 +20,7 @@ uint32_t m_height = 900;
 uint32_t m_debug = BGFX_DEBUG_TEXT | BGFX_DEBUG_STATS;
 uint32_t m_reset = BGFX_RESET_VSYNC;
 
-SSL_GeometryFieldSize* ssl_field;
+RoboCup2014Legacy::Geometry::SSL_GeometryFieldSize* ssl_field;
 SSL_WrapperPacket* ssl_packet;
 SSL_WrapperPacket* ssl_packet_off;
 FieldRenderer* field_renderer;
@@ -212,7 +213,7 @@ void update()
 
 		field_renderer->SetWidgetProperties(ImGui::GetWindowPos() + ImGui::GetCursorPos(), ImGui::GetWindowSize() - ImGui::GetCursorPos() * 2.f);
 		field_renderer->SetDrawList(draw_list);
-		field_renderer->DrawField(*ssl_field);
+		field_renderer->DrawFieldLegacy(*ssl_field);
 
 		vision_mutex.lock();
 		field_renderer->DrawBalls(ssl_packet->detection().balls());
@@ -244,7 +245,7 @@ int main(int argc, char *argv[])
 	
 	field_renderer = new FieldRenderer();
 
-	ssl_field = new SSL_GeometryFieldSize();
+	ssl_field = new RoboCup2014Legacy::Geometry::SSL_GeometryFieldSize();
 	ssl_field->set_field_length(9000);
 	ssl_field->set_field_width(6000);
 	ssl_field->set_boundary_width(700);
@@ -255,7 +256,7 @@ int main(int argc, char *argv[])
 	ssl_field->set_goal_width(1000);
 	ssl_field->set_goal_depth(180);
 
-	field_renderer->SetFieldSize(*ssl_field);
+	field_renderer->SetFieldSizeLegacy(*ssl_field);
 
 	ssl_packet_off = new SSL_WrapperPacket();
 	ssl_packet = new SSL_WrapperPacket();
@@ -275,7 +276,7 @@ int main(int argc, char *argv[])
 	sslClient = new RoboCupSSLClient();
 	sslClient->open(true);
 
-	bool running = true;
+	atomic<bool> running = true;
 
 	auto vision_func = [&]()
 	{

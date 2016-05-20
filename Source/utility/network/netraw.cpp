@@ -1,217 +1,295 @@
+#ifdef WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/poll.h>
-
-#include <stdio.h>
 #include <netdb.h>
 #include <unistd.h>
-#include <fcntl.h>
+#endif
 
+#include <stdio.h>
+#include <fcntl.h>
 #include "netraw.h"
 
-namespace Net{
 
-//====================================================================//
-//  Net::Address: Network address class
-//  (C) James Bruce
-//====================================================================//
+namespace Net {
+#ifdef WIN32
+	static bool initialized = false;
+	static void initWinSock()
+	{
+		if (!initialized) {
+			WORD wVersionRequested;
+			WSADATA wsaData;
 
-bool Address::setHost(const char *hostname,int port)
-{
-  // printf("%s %d\n",hostname,port);
-  addrinfo *res = NULL;
-  getaddrinfo(hostname,NULL,NULL,&res);
-  if(!res) return(false);
+			wVersionRequested = MAKEWORD(2, 0);              // Request WinSock v2.0
+			if (WSAStartup(wVersionRequested, &wsaData) != 0) {  // Load WinSock DLL
+				printf("ERROR WHEN LOADING WINSOCK DLL\n");
+			}
+			initialized = true;
+		}
+	}
+#endif
+	//====================================================================//
+	//  Net::Address: Network address class
+	//  (C) James Bruce
+	//====================================================================//
 
-  memset(&addr,0,sizeof(addr));
-  addr_len = res->ai_addrlen;
-  memcpy(&addr,res->ai_addr,addr_len);
+	Address::Address()
+	{
+#ifdef WIN32
+		initWinSock();
+#endif
+		memset(&addr, 0, sizeof(addr)); addr_len = 0;
+	}
+	Address::Address(const Address &src)
+	{
+#ifdef WIN32
+		initWinSock();
+#endif
+		copy(src);
+	}
+	Address::~Address()
+	{
+#ifdef WIN32
+		initWinSock();
+#endif
+		reset();
+	}
 
-  // set port for internet sockets
-  sockaddr_in *sockname = (sockaddr_in*)(&addr);
-  if(sockname->sin_family == AF_INET){
-    sockname->sin_port = htons(port);
-  }else{
-    // TODO: any way to set port in general?
-  }
+	bool Address::setHost(const char *hostname, int port)
+	{
+		// printf("%s %d\n",hostname,port);
+		addrinfo *res = NULL;
+		getaddrinfo(hostname, NULL, NULL, &res);
+		if (!res) return(false);
 
-  freeaddrinfo(res);
-  return(true);
-}
+		memset(&addr, 0, sizeof(addr));
+		addr_len = res->ai_addrlen;
+		memcpy(&addr, res->ai_addr, addr_len);
 
-void Address::setAny(int port)
-{
-  memset(&addr,0,sizeof(addr));
-  sockaddr_in *s = (sockaddr_in*)(&addr);
-  s->sin_addr.s_addr = htonl(INADDR_ANY);
-  s->sin_port = htons(port);
-  addr_len = sizeof(sockaddr_in);
-}
+		// set port for internet sockets
+		sockaddr_in *sockname = (sockaddr_in*)(&addr);
+		if (sockname->sin_family == AF_INET) {
+			sockname->sin_port = htons(port);
+		}
+		else {
+			// TODO: any way to set port in general?
+		}
 
-in_addr_t Address::getInAddr() const
-{
-  const sockaddr_in *s = (sockaddr_in*)(&addr);
-  return(s->sin_addr.s_addr);
-}
+		freeaddrinfo(res);
+		return(true);
+	}
 
-void Address::print(FILE *out) const
-{
-  if(!addr_len){
-    printf("null");
-    return;
-  }
+	void Address::setAny(int port)
+	{
+		memset(&addr, 0, sizeof(addr));
+		sockaddr_in *s = (sockaddr_in*)(&addr);
+		s->sin_addr.s_addr = htonl(INADDR_ANY);
+		s->sin_port = htons(port);
+		addr_len = sizeof(sockaddr_in);
+	}
 
-  sockaddr_in *sockname = (sockaddr_in*)(&addr);
-  if(sockname->sin_family == AF_INET){
-    unsigned a = ntohl(sockname->sin_addr.s_addr);
-    unsigned short p = ntohs(sockname->sin_port);
+	in_addr_t Address::getInAddr() const
+	{
+		const sockaddr_in *s = (sockaddr_in*)(&addr);
+		return(s->sin_addr.s_addr);
+	}
 
-    fprintf(out,"%d.%d.%d.%d:%d",
-            (a>>24)&0xFF, (a>>16)&0xFF, (a>>8)&0xFF, a&0xFF, p);
-  }else{
-    fprintf(out,"?");
-  }
-}
+	void Address::print(FILE *out) const
+	{
+		if (!addr_len) {
+			printf("null");
+			return;
+		}
 
-//====================================================================//
-//  Net::UDP: Simple raw UDP messaging
-//  (C) James Bruce
-//====================================================================//
+		sockaddr_in *sockname = (sockaddr_in*)(&addr);
+		if (sockname->sin_family == AF_INET) {
+			unsigned a = ntohl(sockname->sin_addr.s_addr);
+			unsigned short p = ntohs(sockname->sin_port);
 
-bool UDP::open(int port, bool share_port_for_multicasting, bool multicast_include_localhost, bool blocking)
-{
-  const int TTL = 32;
-  
-  // open the socket
-  if(fd >= 0) ::close(fd);
-  fd = socket(PF_INET, SOCK_DGRAM, 0);
+			fprintf(out, "%d.%d.%d.%d:%d",
+				(a >> 24) & 0xFF, (a >> 16) & 0xFF, (a >> 8) & 0xFF, a & 0xFF, p);
+		}
+		else {
+			fprintf(out, "?");
+		}
+	}
 
-  // set socket as non-blocking
-  int flags = fcntl(fd, F_GETFL, 0);
-  if(flags < 0) flags = 0;
-  fcntl(fd, F_SETFL, flags | (blocking ? 0 : O_NONBLOCK));
+	//====================================================================//
+	//  Net::UDP: Simple raw UDP messaging
+	//  (C) James Bruce
+	//====================================================================//
+	UDP::UDP()
+	{
+#ifdef WIN32
+		initWinSock();
+#endif
+		fd = -1; close();
+	}
 
-  if (share_port_for_multicasting) {
-    int reuse=1;
-    if(setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse,sizeof(reuse))!=0) {
-      fprintf(stderr,"ERROR WHEN SETTING SO_REUSEADDR ON UDP SOCKET\n");
-      fflush(stderr);
-    }
-    /*if(setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, 1)!=0) {
-      fprintf(stderr,"ERROR WHEN SETTING SO_REUSEPORT ON UDP SOCKET\n");
-      fflush(stderr);
-    }*/
-  }
+	bool UDP::open(int port, bool share_port_for_multicasting, bool multicast_include_localhost, bool blocking)
+	{
+		const int TTL = 32;
 
-  if (multicast_include_localhost) {
-    int yes = 1;
-    // allow packets to be received on this host
-    if (setsockopt(fd, IPPROTO_IP, IP_MULTICAST_LOOP, (const char*)&yes, sizeof(yes))!=0) {
-        fprintf(stderr,"ERROR WHEN SETTING IP_MULTICAST_LOOP ON UDP SOCKET\n");
-        fflush(stderr);
-    }
-  }
-	// sets the TTL value so routing of the packet is possible, if needed.
-  int ret = setsockopt(fd, IPPROTO_IP, IP_MULTICAST_TTL, &TTL, sizeof(TTL));
-  if(ret != 0)
-  {
-    printf("ERROR %d WHEN SETTING IP_MULTICAST_TTL\n", ret);
-    return false;
-  }
+		// open the socket
+		if (fd >= 0)
+		{
+#ifdef WIN32
+			::closesocket(fd);
+#else
+			::close(fd);
+#endif
+		}
+		fd = socket(PF_INET, SOCK_DGRAM, 0);
 
-  // bind socket to port if nonzero
-  if(port != 0){
-    sockaddr_in sockname;
-    sockname.sin_family = AF_INET;
-    sockname.sin_addr.s_addr = htonl(INADDR_ANY);
-    sockname.sin_port = htons(port);
-    bind(fd,(struct sockaddr*)(&sockname),sizeof(sockname));
-  }
+		// set socket as non-blocking
+#if WIN32
+		u_long iMode = blocking ? 0 : 1;
+		int iResult = ioctlsocket(fd, FIONBIO, &iMode);
+		if (iResult != NO_ERROR) {
+			printf("ERROR WHEN SETTING FIONBIO ON UDP SOCKET: %ld\n", iResult);
+		}
+#else
+		int flags = fcntl(fd, F_GETFL, 0);
+		if (flags < 0) flags = 0;
+		fcntl(fd, F_SETFL, flags | (blocking ? 0 : O_NONBLOCK));
+#endif
 
 
+		if (share_port_for_multicasting) {
+			int reuse = 1;
+			if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse)) != 0) {
+				fprintf(stderr, "ERROR WHEN SETTING SO_REUSEADDR ON UDP SOCKET\n");
+				fflush(stderr);
+			}
+			/*if(setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, 1)!=0) {
+			  fprintf(stderr,"ERROR WHEN SETTING SO_REUSEPORT ON UDP SOCKET\n");
+			  fflush(stderr);
+			}*/
+		}
 
-  /*
-  // allow port reuse (for when a program is quickly restarted)
-  // (not sure we really need this)
-  int one = 1;
-  setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
-  */
+		if (multicast_include_localhost) {
+			int yes = 1;
+			// allow packets to be received on this host
+			if (setsockopt(fd, IPPROTO_IP, IP_MULTICAST_LOOP, (const char*)&yes, sizeof(yes)) != 0) {
+				fprintf(stderr, "ERROR WHEN SETTING IP_MULTICAST_LOOP ON UDP SOCKET\n");
+				fflush(stderr);
+			}
+		}
+		// sets the TTL value so routing of the packet is possible, if needed.
+		int ret = setsockopt(fd, IPPROTO_IP, IP_MULTICAST_TTL, (const char*)&TTL, sizeof(TTL));
+		if (ret != 0)
+		{
+			printf("ERROR %d WHEN SETTING IP_MULTICAST_TTL\n", ret);
+			return false;
+		}
 
-  return(true);
-}
+		// bind socket to port if nonzero
+		if (port != 0) {
+			sockaddr_in sockname;
+			sockname.sin_family = AF_INET;
+			sockname.sin_addr.s_addr = htonl(INADDR_ANY);
+			sockname.sin_port = htons(port);
+			bind(fd, (struct sockaddr*)(&sockname), sizeof(sockname));
+		}
 
-bool UDP::addMulticast(const Address &multiaddr,const Address &interface)
-{
-  static const bool debug = false;
-  struct ip_mreq imreq;
-  imreq.imr_multiaddr.s_addr = multiaddr.getInAddr();
-  imreq.imr_interface.s_addr = interface.getInAddr();
 
-  if(debug){
-    printf("0x%08X 0x%08X\n",
-           (unsigned)interface.getInAddr(),
-           (unsigned)INADDR_ANY);
-  }
 
-  int ret = setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
-                       &imreq, sizeof(imreq));
-  if(debug) printf("ret=%d\n",ret);
-  if(ret != 0)
-    return false;
-    
-  //set multicast output interface
-  ret = setsockopt(fd, IPPROTO_IP, IP_MULTICAST_IF,
-                   &imreq.imr_interface.s_addr, sizeof(imreq.imr_interface.s_addr));
-  if(debug) printf("ret=%d\n",ret);
+		/*
+		// allow port reuse (for when a program is quickly restarted)
+		// (not sure we really need this)
+		int one = 1;
+		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+		*/
 
-  return(ret == 0);
-}
+		return(true);
+	}
 
-void UDP::close()
-{
-  if(fd >= 0) ::close(fd);
-  fd = -1;
+	bool UDP::addMulticast(const Address &multiaddr, const Address &interf)
+	{
+		static const bool debug = false;
+		struct ip_mreq imreq;
+		imreq.imr_multiaddr.s_addr = multiaddr.getInAddr();
+		imreq.imr_interface.s_addr = interf.getInAddr();
 
-  sent_packets = 0;
-  sent_bytes   = 0;
-  recv_packets = 0;
-  recv_bytes   = 0;
-}
+		if (debug) {
+			printf("0x%08X 0x%08X\n",
+				(unsigned)interf.getInAddr(),
+				(unsigned)INADDR_ANY);
+		}
 
-bool UDP::send(const void *data,int length,const Address &dest)
-{
-  int len = sendto(fd,data,length,0,&dest.addr,dest.addr_len);
+		int ret = setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+			(const char*)&imreq, sizeof(imreq));
+		if (debug) printf("ret=%d\n", ret);
+		if (ret != 0)
+			return false;
 
-  if(len > 0){
-    sent_packets++;
-    sent_bytes += len;
-  }
+		//set multicast output interface
+		ret = setsockopt(fd, IPPROTO_IP, IP_MULTICAST_IF,
+			(const char*)&imreq.imr_interface.s_addr, sizeof(imreq.imr_interface.s_addr));
+		if (debug) printf("ret=%d\n", ret);
 
-  return(len == length);
-}
+		return(ret == 0);
+	}
 
-int UDP::recv(void *data,int length,Address &src)
-{
-  src.addr_len = sizeof(src.addr);
-  int len = recvfrom(fd,data,length,0,&src.addr,&src.addr_len);
+	void UDP::close()
+	{
+		if (fd >= 0)
+		{
+#ifdef WIN32
+			::closesocket(fd);
+#else
+			::close(fd);
+#endif
+			fd = -1;
+		}
 
-  if(len > 0){
-    recv_packets++;
-    recv_bytes += len;
-  }
+		sent_packets = 0;
+		sent_bytes = 0;
+		recv_packets = 0;
+		recv_bytes = 0;
+	}
 
-  return(len);
-}
+	bool UDP::send(const void *data, int length, const Address &dest)
+	{
+		int len = sendto(fd, (const char*)data, length, 0, &dest.addr, dest.addr_len);
 
-bool UDP::wait(int timeout_ms) const
-{
-  pollfd pfd;
-  pfd.fd = fd;
-  pfd.events = POLLIN;
-  pfd.revents = 0;
+		if (len > 0) {
+			sent_packets++;
+			sent_bytes += len;
+		}
 
-  return(poll(&pfd,1,timeout_ms) == 1);
-}
+		return(len == length);
+	}
+
+	int UDP::recv(void *data, int length, Address &src)
+	{
+		src.addr_len = sizeof(src.addr);
+		int len = recvfrom(fd, (char*)data, length, 0, &src.addr, &src.addr_len);
+
+		if (len > 0) {
+			recv_packets++;
+			recv_bytes += len;
+		}
+
+		return(len);
+	}
+
+	bool UDP::wait(int timeout_ms) const
+	{
+		pollfd pfd;
+		pfd.fd = fd;
+		pfd.events = POLLIN;
+		pfd.revents = 0;
+
+#if WIN32
+		return(WSAPoll(&pfd, 1, timeout_ms) == 0);
+#else
+		return(poll(&pfd, 1, timeout_ms) == 1);
+#endif
+	}
 
 }; // namespace Net
 

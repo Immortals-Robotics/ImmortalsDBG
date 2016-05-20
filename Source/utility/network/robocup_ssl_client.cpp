@@ -21,59 +21,59 @@
 #include "robocup_ssl_client.h"
 
 RoboCupSSLClient::RoboCupSSLClient(int port,
-                     string net_address,
-                     string net_interface)
+	string net_address,
+	string net_interface)
 {
-  _port=port;
-  _net_address=net_address;
-  _net_interface=net_interface;
-  in_buffer=new char[65536];
+	_port = port;
+	_net_address = net_address;
+	_net_interface = net_interface;
+	in_buffer = new char[65536];
 }
 
 
 RoboCupSSLClient::~RoboCupSSLClient()
 {
-  delete[] in_buffer;
+	delete[] in_buffer;
 }
 
 void RoboCupSSLClient::close() {
-  mc.close();
+	mc.close();
 }
 
 bool RoboCupSSLClient::open(bool blocking) {
-  close();
-  if(!mc.open(_port,true,true,blocking)) {
-    fprintf(stderr,"Unable to open UDP network port: %d\n",_port);
-    fflush(stderr);
-    return(false);
-  }
+	close();
+	if (!mc.open(_port, true, true, blocking)) {
+		fprintf(stderr, "Unable to open UDP network port: %d\n", _port);
+		fflush(stderr);
+		return(false);
+	}
 
-  Net::Address multiaddr,interface;
-  multiaddr.setHost(_net_address.c_str(),_port);
-  if(_net_interface.length() > 0){
-    interface.setHost(_net_interface.c_str(),_port);
-  }else{
-    interface.setAny();
-  }
+	Net::Address multiaddr, interf;
+	multiaddr.setHost(_net_address.c_str(), _port);
+	if (_net_interface.length() > 0) {
+		interf.setHost(_net_interface.c_str(), _port);
+	}
+	else {
+		interf.setAny();
+	}
 
-  if(!mc.addMulticast(multiaddr,interface)) {
-    fprintf(stderr,"Unable to setup UDP multicast\n");
-    fflush(stderr);
-    return(false);
-  }
+	if (!mc.addMulticast(multiaddr, interf)) {
+		fprintf(stderr, "Unable to setup UDP multicast\n");
+		fflush(stderr);
+		return(false);
+	}
 
-  return(true);
+	return(true);
 }
 
 bool RoboCupSSLClient::receive(SSL_WrapperPacket & packet) {
-  Net::Address src;
-  int r=0;
-  r = mc.recv(in_buffer,MaxDataGramSize,src);
-  if (r>0) {
-    fflush(stdout);
-    //decode packet:
-    return packet.ParseFromArray(in_buffer,r);
-  }
-  return false;
+	Net::Address src;
+	int r = 0;
+	r = mc.recv(in_buffer, MaxDataGramSize, src);
+	if (r > 0) {
+		fflush(stdout);
+		//decode packet:
+		return packet.ParseFromArray(in_buffer, r);
+	}
+	return false;
 }
-

@@ -7,7 +7,7 @@
 #include "../utility/vector_helper.h"
 #include "../utility/colors.h"
 
-void FieldRenderer::DrawField(const SSL_GeometryFieldSize& data) const
+void FieldRenderer::DrawFieldLegacy(const RoboCup2014Legacy::Geometry::SSL_GeometryFieldSize& data) const
 {
 	// Field
 
