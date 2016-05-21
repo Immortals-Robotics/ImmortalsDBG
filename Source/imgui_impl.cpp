@@ -92,7 +92,7 @@ static void imguiDrawLists(ImDrawData* data)
     bgfx::setViewTransform(0, nullptr, proj);
 
 	uint64_t state = BGFX_STATE_BLEND_ALPHA |
-		BGFX_STATE_RGB_WRITE | BGFX_STATE_ALPHA_WRITE | BGFX_STATE_DEPTH_TEST_ALWAYS | BGFX_STATE_CULL_CCW;
+		BGFX_STATE_RGB_WRITE | BGFX_STATE_ALPHA_WRITE | BGFX_STATE_DEPTH_TEST_ALWAYS;
 
     for (int n = 0; n < data->CmdListsCount; n++) {
         const ImDrawList* cmdList = data->CmdLists[n];
@@ -243,8 +243,6 @@ int imguiInit(uint16_t viewWidth, uint16_t viewHeight)
     }
     conf.Fonts->TexID = (void*)&gIm->fontTexHandle;
 
-	ImGui::GetStyle().AntiAliasedLines = false;
-
     ImGui::NewFrame();
 
     BX_END_OK();
@@ -284,5 +282,6 @@ void imguiNewFrame()
 {
     ImGui::NewFrame();
     ImGui::ShowTestWindow();
-    //ImGui::ShowStyleEditor();
+    ImGui::ShowStyleEditor();
+	ImGui::ShowMetricsWindow();
 }

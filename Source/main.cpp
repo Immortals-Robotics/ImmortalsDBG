@@ -17,7 +17,6 @@
 SDL_Window* window;
 uint32_t m_width = 1600;
 uint32_t m_height = 900;
-uint32_t m_debug = BGFX_DEBUG_TEXT | BGFX_DEBUG_STATS;
 uint32_t m_debug = BGFX_DEBUG_TEXT;
 uint32_t m_reset = BGFX_RESET_VSYNC;
 
