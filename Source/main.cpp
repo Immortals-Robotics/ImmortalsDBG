@@ -14,6 +14,10 @@
 
 #include "utility/network/robocup_ssl_client.h"
 
+#include "protos/messages_immortals_world_state.pb.h"
+
+#include <zmq.h>
+
 SDL_Window* window;
 uint32_t m_width = 1600;
 uint32_t m_height = 900;
@@ -298,7 +302,45 @@ int main(int argc, char *argv[])
 		}
 	};
 
+	auto zmq_fun = [&]()
+	{
+		//  Socket to talk to server
+		printf("Collecting updates from ai server\n");
+		void *context = zmq_ctx_new();
+		void *subscriber = zmq_socket(context, ZMQ_SUB);
+		int rc = zmq_connect(subscriber, "tcp://localhost:5556");
+		assert(rc == 0);
+
+		//  Subscribe to zipcode, default is NYC, 10001
+		char *filter = "";
+		rc = zmq_setsockopt(subscriber, ZMQ_SUBSCRIBE,
+			filter, strlen(filter));
+		assert(rc == 0);
+
+		const int buffer_size = 1000*1000;
+		char* buffer = new char[buffer_size];
+
+
+		while (running)
+		{
+			this_thread::sleep_for(chrono::milliseconds(16));
+			int received_size = zmq_recv(subscriber, buffer, buffer_size, 0);
+
+			printf("Received ai debug blob of size %d\n", received_size);
+
+			Immortals::WorldState::WorldState world_state;
+			if (!world_state.ParseFromArray(buffer, received_size))
+				continue;
+			printf("WorldState (%.2f, %.2f)\n", world_state.ball().position().x(), world_state.ball().position().y());
+		}
+		zmq_close(subscriber);
+		zmq_ctx_destroy(context);
+
+		delete buffer;
+	};
+
 	thread vision_thread(vision_func);
+	thread zmq_thread(zmq_fun);
 
 	while (sdlPollEvents())
 	{
@@ -308,5 +350,6 @@ int main(int argc, char *argv[])
 	running = false;
 	shutdown();
 	vision_thread.join();
+	zmq_thread.join();
 	return 0;
 }
