@@ -1,3 +1,5 @@
+#include "../../Source/RobotData.h"
+#include <vector>
 // dear imgui, v1.48 WIP
 // (demo code)
 
@@ -102,6 +104,7 @@ void ImGui::ShowTestWindow(bool* p_opened)
 	ImGui::Text("View");
 	if (ImGui::TreeNode("Control View"))
 	{
+		
 		static int robotNumber;
 		ImGui::Text("Robot Number:"); ImGui::SameLine();
 		ImGui::InputInt(" ", &robotNumber);
@@ -146,10 +149,58 @@ void ImGui::ShowTestWindow(bool* p_opened)
 					}
 				}
 			}
+			/*for (int i = 0; i < IM_ARRAYSIZE(io.MouseDown); i++)
+			{
+				if (i == 0 && ImGui::IsMouseClicked(i))
+				{
+					shift_chart++;
+				}
+				else if (i == 1 && ImGui::IsMouseClicked(i))
+				{
+					shift_chart--;
+					if (shift_chart < 0)
+						shift_chart = 0;
+				}
+			}*/
 		}
 		if (ImGui::TreeNode("Motor Diagram"))
 		{
+			static bool animate = true;
+			static int shift_chart = 0;
+			ImGui::Checkbox("Play", &animate);
+			if (animate)
+			{
+				static float refresh_time = ImGui::GetTime(); // Create dummy data at fixed 60 hz rate for the demo
+				for (; ImGui::GetTime() > refresh_time + 1.0f / 60.0f; refresh_time += 1.0f / 60.0f)
+				{
+					static float phase = 0.0f;
+					shift_chart = shift_chart + 1;
+				}
+			}
+			ImGuiIO& io = ImGui::GetIO();
+			if (ImGui::IsKeyPressed(46))
+			{
+				shift_chart++;
+			}
+			if (ImGui::IsKeyPressed(44))
+			{
+				shift_chart--;
+				if (shift_chart < 0)
+					shift_chart = 0;
+			}
 
+			float sample_data[] = { 20.23f,13.2f,23.04f,23.23f,0.23f,03.2f,23.234f,34.234f,0.33f,23.34f,34.23f,23.443f,12.324f,24.123f,0.23f,03.2f,23.234f,34.234f,0.33f,23.34f,34.23f,23.443f,12.324f,24.123f,0.23f,03.2f,23.234f,34.234f,0.33f,23.34f,34.23f,23.443f,12.324f,24.123f};
+			float sample_data2[] = { 0.23f,03.2f,23.234f,34.234f,0.33f,23.34f,34.23f,23.443f,12.324f,24.123f,0.23f,03.2f,23.234f,34.234f,0.33f,23.34f,20.23f,13.2f,23.04f,23.23f,0.23f,03.2f,23.234f,34.234f,0.33f,23.34f,34.23f,23.443f,12.324f,24.123f,34.12f,12.3f,34.23f,0.23f,2.12f,33.33f };
+			ImGui::Text("");
+			ImGui::SameLine(50.0f);
+			ImGui::PlotLines("", sample_data, 20, shift_chart, "", 0.0f, 40.0f, ImVec2(0, 80));
+			ImGui::SameLine(50.0f);
+			ImGui::PushStyleColor(ImGuiCol_PlotLines,ImVec4(0.5f,0.2f,0.2f,1.0f));
+			ImGui::PlotLines("", sample_data2, 20, shift_chart, "", 0.0f, 40.0f, ImVec2(0, 80));
+			ImGui::PopStyleColor();
+			ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Data1");
+			ImGui::SameLine();
+			ImGui::TextColored(ImVec4(0.5f, 0.2f, 0.2f, 1.0f), "Data2");
 			ImGui::TreePop();
 		}
 		ImGui::TreePop();
@@ -169,93 +220,116 @@ void ImGui::ShowTestWindow(bool* p_opened)
 			{ "10","8.3","~","~","1","1","0" },
 			{ "11","8.3","~","~","1","1","0" },
 			{ "12","8.3","~","~","1","1","0" } };
-		ImGui::Columns(7, "mixed");
-		ImGui::Separator();
-		const char* headers[7] = { "#R","Battery","Enc 1\\2\\3\\4","M 1\\2\\3\\4","Kick","Cheap","Err" };
-		const float columnsWidth[7] = {2,6,3,3,1,1,1};
-
-		const float totalColumnsSize = GetContentRegionAvailWidth();
-		float columnOffset = 0.0f;
-		static bool firstTime = true;
-		for (int i = 0; i < 7; i++)
+		static vector<RobotFeedback> testRobotData;
+		static bool firstRun = true;
+		if (firstRun)
 		{
-			
-			//ImGui::PushItemWidth();
-			ImGui::Text(headers[i]);
-			//if (firstTime)
-			//{
-			//	ImGui::SetColumnOffset(-1, 50);
-			//	columnOffset += totalColumnsSize*(columnsWidth[i]/17.0f);
-			//}
-			ImGui::NextColumn();
-			//ImGui::PopItemWidth();
-		}
-		firstTime = false;
-		ImGui::Separator();
-		for (int j = 0; j < 6; j++)//-> 12 robot
-		{
-			for (int i = 0; i < 7; i++)
+			for (int i = 0; i < 12; i++)
 			{
-				if (i == 1)	//index of battery voltage
-				{
-					//ImGui::Text(robotData[j][i]); ImGui::SameLine(30);
-					float batteryInt = 1.0f - ((16.8f - atof(robotData[j][i])) / 7.0f);	//full=16.8 emp=9.8
-					ImColor buttonColor = ImColor(1.0f - batteryInt, batteryInt, 0.2f);
-					ImGui::PushStyleColor(ImGuiCol_Button, buttonColor);
-					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, buttonColor);
-					ImGui::PushStyleColor(ImGuiCol_ButtonActive, buttonColor);
-					//ImGui::PushItemWidth(200.0f*batteryInt);
-					//printf("%f\n", ImGui::GetContentRegionAvailWidth()*batteryInt);
-					//ImGui::TextColored(ImVec4(batteryInt, batteryInt, batteryInt, 1.0f), robotData[j][i]);
-					ImGui::Button("", ImVec2(ImGui::GetContentRegionAvailWidth()*batteryInt, 0));
-					//ImGui::PopItemWidth(); 
-					ImGui::PopStyleColor(3);
-				}
-				else if (i == 4 || i == 5)
-				{
-					ImColor buttonColor;
-					if (strcmp(robotData[j][i], "1"))
-					{
-						buttonColor = ImColor(0.8f, 0.0f, 0.2f);
-						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
-					}
-					else
-					{
-						buttonColor = ImColor(0.0f, 0.8f, 0.2f);
-						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
-					}
-					ImGui::PushStyleColor(ImGuiCol_Button, buttonColor);
-					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, buttonColor);
-					ImGui::PushStyleColor(ImGuiCol_ButtonActive, buttonColor);
-					ImGui::Button(robotData[j][i]);
-					ImGui::PopStyleColor(4);
-				}
-				else if (i == 6)	//index of error flag
-				{
-					ImColor buttonColor;
-					if (strcmp(robotData[j][i], "0"))
-					{
-						buttonColor = ImColor(0.8f, 0.0f, 0.2f);
-						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
-					}
-					else
-					{
-						buttonColor = ImColor(0.0f, 0.8f, 0.2f);
-						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
-					}
-					ImGui::PushStyleColor(ImGuiCol_Button, buttonColor);
-					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, buttonColor);
-					ImGui::PushStyleColor(ImGuiCol_ButtonActive, buttonColor);
-					ImGui::Button(robotData[j][i]);
-					ImGui::PopStyleColor(4);
-				} 
-				else
-					ImGui::Text(robotData[j][i]);
-				ImGui::NextColumn();
+				RobotFeedback temp;
+				temp.set_robot_id(atoi(robotData[i][0]));
+				temp.set_battery_voltage(atof(robotData[i][1]));
+				temp.add_encoder_fault((bool)((float)rand() / RAND_MAX > 0.5 ? 1 : 0));
+				temp.add_encoder_fault((bool)((float)rand() / RAND_MAX > 0.5 ? 1 : 0));
+				temp.add_encoder_fault((bool)((float)rand() / RAND_MAX > 0.5 ? 1 : 0));
+				temp.add_encoder_fault((bool)((float)rand() / RAND_MAX > 0.5 ? 1 : 0));
+				temp.add_motor_fault((bool)((float)rand() / RAND_MAX > 0.5 ? 1 : 0));
+				temp.add_motor_fault((bool)((float)rand() / RAND_MAX > 0.5 ? 1 : 0));
+				temp.add_motor_fault((bool)((float)rand() / RAND_MAX > 0.5 ? 1 : 0));
+				temp.add_motor_fault((bool)((float)rand() / RAND_MAX > 0.5 ? 1 : 0));
+				temp.set_dribbe_connected((bool)((float)rand() / RAND_MAX > 0.5 ? 1 : 0));
+				testRobotData.push_back(temp);
 			}
-			ImGui::Separator();
+			firstRun = false;
 		}
-		ImGui::TreePop();
+		DrawRobotDatas(testRobotData);
+		//ImGui::Columns(7, "mixed");
+		//ImGui::Separator();
+		//const char* headers[7] = { "#R","Battery","Enc 1\\2\\3\\4","M 1\\2\\3\\4","Kick","Cheap","Err" };
+		//const float columnsWidth[7] = {2,6,3,3,1,1,1};
+
+		//const float totalColumnsSize = GetContentRegionAvailWidth();
+		//float columnOffset = 0.0f;
+		//static bool firstTime = true;
+		//for (int i = 0; i < 7; i++)
+		//{
+		//	
+		//	//ImGui::PushItemWidth();
+		//	ImGui::Text(headers[i]);
+		//	//if (firstTime)
+		//	//{
+		//	//	ImGui::SetColumnOffset(-1, 50);
+		//	//	columnOffset += totalColumnsSize*(columnsWidth[i]/17.0f);
+		//	//}
+		//	ImGui::NextColumn();
+		//	//ImGui::PopItemWidth();
+		//}
+		//firstTime = false;
+		//ImGui::Separator();
+		//for (int j = 0; j < 6; j++)//-> 12 robot
+		//{
+		//	for (int i = 0; i < 7; i++)
+		//	{
+		//		if (i == 1)	//index of battery voltage
+		//		{
+		//			//ImGui::Text(robotData[j][i]); ImGui::SameLine(30);
+		//			float batteryInt = 1.0f - ((16.8f - atof(robotData[j][i])) / 7.0f);	//full=16.8 emp=9.8
+		//			ImColor buttonColor = ImColor(1.0f - batteryInt, batteryInt, 0.2f);
+		//			ImGui::PushStyleColor(ImGuiCol_Button, buttonColor);
+		//			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, buttonColor);
+		//			ImGui::PushStyleColor(ImGuiCol_ButtonActive, buttonColor);
+		//			//ImGui::PushItemWidth(200.0f*batteryInt);
+		//			//printf("%f\n", ImGui::GetContentRegionAvailWidth()*batteryInt);
+		//			//ImGui::TextColored(ImVec4(batteryInt, batteryInt, batteryInt, 1.0f), robotData[j][i]);
+		//			ImGui::Button("", ImVec2(ImGui::GetContentRegionAvailWidth()*batteryInt, 0));
+		//			//ImGui::PopItemWidth(); 
+		//			ImGui::PopStyleColor(3);
+		//		}
+		//		else if (i == 4 || i == 5)
+		//		{
+		//			ImColor buttonColor;
+		//			if (strcmp(robotData[j][i], "1"))
+		//			{
+		//				buttonColor = ImColor(0.8f, 0.0f, 0.2f);
+		//				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+		//			}
+		//			else
+		//			{
+		//				buttonColor = ImColor(0.0f, 0.8f, 0.2f);
+		//				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+		//			}
+		//			ImGui::PushStyleColor(ImGuiCol_Button, buttonColor);
+		//			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, buttonColor);
+		//			ImGui::PushStyleColor(ImGuiCol_ButtonActive, buttonColor);
+		//			ImGui::Button(robotData[j][i]);
+		//			ImGui::PopStyleColor(4);
+		//		}
+		//		else if (i == 6)	//index of error flag
+		//		{
+		//			ImColor buttonColor;
+		//			if (strcmp(robotData[j][i], "0"))
+		//			{
+		//				buttonColor = ImColor(0.8f, 0.0f, 0.2f);
+		//				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+		//			}
+		//			else
+		//			{
+		//				buttonColor = ImColor(0.0f, 0.8f, 0.2f);
+		//				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+		//			}
+		//			ImGui::PushStyleColor(ImGuiCol_Button, buttonColor);
+		//			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, buttonColor);
+		//			ImGui::PushStyleColor(ImGuiCol_ButtonActive, buttonColor);
+		//			ImGui::Button(robotData[j][i]);
+		//			ImGui::PopStyleColor(4);
+		//		} 
+		//		else
+		//			ImGui::Text(robotData[j][i]);
+		//		ImGui::NextColumn();
+		//	}
+		//	ImGui::Separator();
+		//}
+		//ImGui::TreePop();
 	}
 
 	ImGui::End();
