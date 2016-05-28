@@ -19,9 +19,9 @@
 #include <zmq.h>
 
 SDL_Window* window;
-uint32_t m_width = 1600;
-uint32_t m_height = 900;
-uint32_t m_debug = BGFX_DEBUG_TEXT;
+int m_width = 1600;
+int m_height = 900;
+uint32_t m_debug = BGFX_DEBUG_TEXT | BGFX_DEBUG_STATS;
 uint32_t m_reset = BGFX_RESET_VSYNC;
 
 RoboCup2014Legacy::Geometry::SSL_GeometryFieldSize* ssl_field;
@@ -159,12 +159,6 @@ bool sdlPollEvents()
 }
 
 
-float resize(ImVec2 wIdealSz) {
-	ImVec2 winSz = ImGui::GetWindowSize();
-	bool x = winSz.x < winSz.y;
-	ImVec2 ratio = ImVec2(winSz.x / wIdealSz.x, winSz.y / wIdealSz.y);
-	return x ? (ratio.x > ratio.y ? ratio.x : ratio.y) : (ratio.x > ratio.y ? ratio.y : ratio.x);
-}
 void update()
 {
 	int mx, my;
@@ -190,8 +184,23 @@ void update()
 	gInput.mouseWheel = 0.0f;
 
 	// Set view 0 default viewport.
-	bgfx::setViewRect(0, 0, 0, m_width, m_height);
+	// Setup display size (every frame to accommodate for window resizing)
+	ImGuiIO& io = ImGui::GetIO();
 
+
+	int w, h;
+	SDL_GetWindowSize(window, &w, &h);
+	if (w != m_width || h != m_height) {
+		m_width = w;
+		m_height = h;
+		int display_w, display_h;
+		SDL_GL_GetDrawableSize(window, &display_w, &display_h);
+		io.DisplaySize = ImVec2((float) m_width, (float) m_height);
+		io.DisplayFramebufferScale = ImVec2(m_width > 0 ? ((float) display_w / m_width) : 0,
+											m_height > 0 ? ((float) display_h / m_height) : 0);
+		bgfx::reset(m_width, m_height, m_reset);
+	}
+	bgfx::setViewRect(0, 0, 0, m_width, m_height);
 	// This dummy draw call is here to make sure that view 0 is cleared
 	// if no other draw calls are submitted to view 0.
 	bgfx::touch(0);
@@ -312,7 +321,7 @@ int main(int argc, char *argv[])
 		assert(rc == 0);
 
 		//  Subscribe to zipcode, default is NYC, 10001
-		char *filter = "";
+		const char *filter = "";
 		rc = zmq_setsockopt(subscriber, ZMQ_SUBSCRIBE,
 			filter, strlen(filter));
 		assert(rc == 0);
@@ -328,7 +337,7 @@ int main(int argc, char *argv[])
 
 			printf("Received ai debug blob of size %d\n", received_size);
 
-			Immortals::WorldState::WorldState world_state;
+			Immortals::Data::WorldState world_state;
 			if (!world_state.ParseFromArray(buffer, received_size))
 				continue;
 			printf("WorldState (%.2f, %.2f)\n", world_state.ball().position().x(), world_state.ball().position().y());

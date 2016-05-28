@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(ImmDBG)
+project(ImmortalsDBG)
 include("${CMAKE_SOURCE_DIR}/CMake/Helpers.cmake")
 
 set_project_paths()
@@ -40,19 +40,19 @@ set(SOURCE_FILES
     ${GEN_DEP_SOURCE_FILES}
     ${SHADER_HDRS})
 
-add_executable(ImmDBG ${SOURCE_FILES})
+add_executable(ImmortalsDBG ${SOURCE_FILES})
 
 set_files_group(SOURCE_FILES)
 
 if(MSVC)
-  target_link_libraries(ImmDBG wsock32 ws2_32)
+  target_link_libraries(ImmortalsDBG wsock32 ws2_32)
 endif()
-target_link_libraries(ImmDBG ${PROTOBUF_LIBRARIES} ${Bgfx_LIBRARIES} ${SDL2_LIBRARY} ${ZeroMQ_LIBRARIES})
+target_link_libraries(ImmortalsDBG ${PROTOBUF_LIBRARIES} ${Bgfx_LIBRARIES} ${SDL2_LIBRARY} ${ZeroMQ_LIBRARIES})
 
 if (MSVC)
   add_custom_command(
-    TARGET ImmDBG POST_BUILD                       # Adds a post-build event to ImmDBG
+    TARGET ImmortalsDBG POST_BUILD                       # Adds a post-build event to ImmortalsDBG
     COMMAND ${CMAKE_COMMAND} -E copy_if_different  # which executes "cmake - E copy_if_different..."
     ${SDL2_DLL}                                    # <--this is in-file
-    $<TARGET_FILE_DIR:ImmDBG>)                     # <--this is out-file path
+    $<TARGET_FILE_DIR:ImmortalsDBG>)                     # <--this is out-file path
 endif()
