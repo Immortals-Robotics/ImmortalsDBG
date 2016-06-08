@@ -21,7 +21,7 @@
 SDL_Window* window;
 int m_width = 1600;
 int m_height = 900;
-uint32_t m_debug = BGFX_DEBUG_TEXT | BGFX_DEBUG_STATS;
+uint32_t m_debug = BGFX_DEBUG_TEXT;
 uint32_t m_reset = BGFX_RESET_VSYNC;
 
 RoboCup2014Legacy::Geometry::SSL_GeometryFieldSize* ssl_field;
@@ -29,8 +29,11 @@ SSL_WrapperPacket* ssl_packet;
 SSL_WrapperPacket* ssl_packet_off;
 FieldRenderer* field_renderer;
 RoboCupSSLClient* sslClient;
+Immortals::Data::WorldState* world_state;
+Immortals::Data::WorldState* world_state_off;
 
 mutex vision_mutex;
+mutex reality_mutex;
 
 void init()
 {
@@ -227,6 +230,9 @@ void update()
 		field_renderer->DrawRobots(ssl_packet->detection().robots_blue(), Blue);
 		field_renderer->DrawRobots(ssl_packet->detection().robots_yellow(), Yellow);
 		vision_mutex.unlock();
+		reality_mutex.lock();
+		field_renderer->DrawBalls(world_state->balls());
+		reality_mutex.unlock();
 
 		ImGui::End();
 	}
@@ -311,6 +317,9 @@ int main(int argc, char *argv[])
 		}
 	};
 
+	world_state = new Immortals::Data::WorldState();
+	world_state_off = new Immortals::Data::WorldState();
+
 	auto zmq_fun = [&]()
 	{
 		//  Socket to talk to server
@@ -332,15 +341,18 @@ int main(int argc, char *argv[])
 
 		while (running)
 		{
-			this_thread::sleep_for(chrono::milliseconds(16));
+			this_thread::sleep_for(chrono::milliseconds(1));
 			int received_size = zmq_recv(subscriber, buffer, buffer_size, 0);
 
 			printf("Received ai debug blob of size %d\n", received_size);
 
-			Immortals::Data::WorldState world_state;
-			if (!world_state.ParseFromArray(buffer, received_size))
+			if (!world_state_off->ParseFromArray(buffer, received_size))
 				continue;
-			printf("WorldState (%.2f, %.2f)\n", world_state.ball().position().x(), world_state.ball().position().y());
+
+			reality_mutex.lock();
+			swap(world_state, world_state_off);
+			reality_mutex.unlock();
+			//printf("WorldState (%.2f, %.2f)\n", world_state.ball().position().x(), world_state.ball().position().y());
 		}
 		zmq_close(subscriber);
 		zmq_ctx_destroy(context);

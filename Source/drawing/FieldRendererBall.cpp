@@ -9,3 +9,12 @@ void FieldRenderer::DrawBalls(const google::protobuf::RepeatedPtrField<SSL_Detec
 		this->drawList->AddCircle(ImVec2(ball.x(), ball.y()), ballRadius+10.f, IMC_BLACK, 10);
 	}
 }
+
+void FieldRenderer::DrawBalls(const google::protobuf::RepeatedPtrField<Immortals::Data::BallState>& data) const
+{
+	for (auto ball : data)
+	{
+		this->drawList->AddCircleFilled(ImVec2(ball.position().x(), ball.position().y()), ballRadius, IMC_ORANGE, 10);
+		this->drawList->AddCircle(ImVec2(ball.position().x(), ball.position().y()), ballRadius+10.f, IMC_BLACK, 10);
+	}
+}
