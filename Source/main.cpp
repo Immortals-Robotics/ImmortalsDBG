@@ -35,6 +35,8 @@ Immortals::Data::WorldState* world_state_off;
 mutex vision_mutex;
 mutex reality_mutex;
 
+void DrawSpeedGraph();
+
 void init()
 {
 	SDL_Init(0);
@@ -229,6 +231,9 @@ void update()
 		field_renderer->DrawBalls(ssl_packet->detection().balls());
 		field_renderer->DrawRobots(ssl_packet->detection().robots_blue(), Blue);
 		field_renderer->DrawRobots(ssl_packet->detection().robots_yellow(), Yellow);
+
+		DrawSpeedGraph();
+
 		vision_mutex.unlock();
 		reality_mutex.lock();
 		field_renderer->DrawBalls(world_state->balls());
@@ -245,13 +250,36 @@ void update()
 
 }
 
-void receiveVision()
+std::vector<float> plot_data;
+void DrawSpeedGraph()
 {
+	static bool p_open = true;
 
+	ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiSetCond_FirstUseEver);
+	if (!ImGui::Begin("Speed", &p_open))
+	{
+		// Early out if the window is collapsed, as an optimization.
+		ImGui::End();
+		return;
+	}
+
+	//ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.65f);    // 2/3 of the space for widget and 1/3 for labels
+	ImGui::PushItemWidth(800);                                 // Right align, keep 140 pixels for labels
+
+	ImGui::Text("Dear ImGui says hello.");
+
+	if (ImGui::CollapsingHeader("Graphs widgets"))
+	{
+		ImGui::PlotLines("Lines", plot_data.data(), plot_data.size(), 0, "avg 0.0", -4000.0f, 4000.0f, ImVec2(0, 800));
+	}
+
+	ImGui::End();
 }
 
 int main(int argc, char *argv[])
 {
+	plot_data.resize(300, 2500.0f);
+
 	init();
 
 	bgfx::frame();
@@ -303,6 +331,15 @@ int main(int argc, char *argv[])
 			{
 				auto detection = tmp_ssl_packet.detection();
 				frame_map[detection.camera_id()] = detection;
+
+				for (auto &robot :  detection.robots_blue())
+				{
+					if (robot.robot_id() != 7)
+						continue;
+					plot_data.erase(plot_data.begin());
+					plot_data.push_back(robot.x());
+					break;
+				}
 			}
 
 			ssl_packet_off->clear_detection();
