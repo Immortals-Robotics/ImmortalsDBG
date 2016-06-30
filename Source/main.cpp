@@ -17,6 +17,7 @@
 #include "protos/messages_immortals_world_state.pb.h"
 
 #include <zmq.h>
+#include "com/reader.h"
 
 SDL_Window* window;
 int m_width = 1600;
@@ -250,7 +251,7 @@ void update()
 
 }
 
-std::vector<float> plot_data;
+std::vector<float> plot_data[12 * 2];
 void DrawSpeedGraph()
 {
 	static bool p_open = true;
@@ -270,7 +271,8 @@ void DrawSpeedGraph()
 
 	if (ImGui::CollapsingHeader("Graphs widgets"))
 	{
-		ImGui::PlotLines("Lines", plot_data.data(), plot_data.size(), 0, "avg 0.0", -4000.0f, 4000.0f, ImVec2(0, 800));
+		ImGui::PlotLines("Lines", plot_data[0].data(), plot_data[0].size(), 0, "x", 0, 4500, ImVec2(0, 250));
+		ImGui::PlotLines("Lines", plot_data[5].data(), plot_data[5].size(), 0, "omega", -1024.0f, 1024.0f, ImVec2(0, 250));
 	}
 
 	ImGui::End();
@@ -278,7 +280,8 @@ void DrawSpeedGraph()
 
 int main(int argc, char *argv[])
 {
-	plot_data.resize(300, 2500.0f);
+	for (auto & data : plot_data)
+		data.resize(300, 0.0f);
 
 	init();
 
@@ -334,10 +337,10 @@ int main(int argc, char *argv[])
 
 				for (auto &robot :  detection.robots_blue())
 				{
-					if (robot.robot_id() != 7)
+					if (robot.robot_id() != 1)
 						continue;
-					plot_data.erase(plot_data.begin());
-					plot_data.push_back(robot.x());
+					plot_data[0].erase(plot_data[0].begin());
+					plot_data[0].push_back(robot.x());
 					break;
 				}
 			}
@@ -397,8 +400,52 @@ int main(int argc, char *argv[])
 		delete buffer;
 	};
 
+	auto feedback_func = [&]()
+	{
+		Net::UDP strategyUDP;
+		if (!strategyUDP.open(60006, true, false, true))
+		{
+			fprintf(stderr, "Unable to open UDP network port: %d\n", 60006);
+			fflush(stderr);
+			return false;
+		}
+
+		Net::Address multiaddr, interf;
+		multiaddr.setHost("224.5.23.3", 60006);
+
+		interf.setAny();
+
+		if (!strategyUDP.addMulticast(multiaddr, interf)) {
+			fprintf(stderr, "Unable to setup UDP multicast\n");
+			fflush(stderr);
+			return(false);
+		}
+
+		const int strategyBufferMaxSize = 100000;
+		char strategyBuffer[strategyBufferMaxSize];
+		while (true)
+		{
+			Net::Address src;
+			int strategySize = strategyUDP.recv(strategyBuffer, strategyBufferMaxSize, src);
+			if (strategySize == 32)
+			{
+				robot_feedback_msg_t feedback_msg;
+				read_robot_feedback_fixed(reinterpret_cast<uint8_t*>(strategyBuffer + 1), strategyBuffer[0], &feedback_msg);
+
+				int robot_id = feedback_msg.robot_id;
+				plot_data[robot_id].erase(plot_data[robot_id].begin());
+				plot_data[robot_id].push_back(feedback_msg.omega.f32);
+
+				printf("fault  (%d) : %d\n",
+					feedback_msg.robot_id,
+					feedback_msg.fault);
+			}
+		}
+	};
+
 	thread vision_thread(vision_func);
 	thread zmq_thread(zmq_fun);
+	thread feedback_thread(feedback_func);
 
 	while (sdlPollEvents())
 	{
@@ -409,5 +456,6 @@ int main(int argc, char *argv[])
 	shutdown();
 	vision_thread.join();
 	zmq_thread.join();
+	feedback_thread.join();
 	return 0;
 }
