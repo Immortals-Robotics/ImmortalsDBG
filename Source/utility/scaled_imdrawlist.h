@@ -1,4 +1,4 @@
-#include "../../3rdparty/imgui/imgui.h"
+#include "imgui.h"
 #include "vector_helper.h"
 
 #ifndef IM_PI
@@ -76,7 +76,7 @@ struct ImDrawListScaled
 	}
 	inline void  PathFill(ImU32 col) const
 	{
-		drawList->PathFill(col);
+		drawList->PathFillConvex(col);
 	}
 	inline void  PathStroke(ImU32 col, bool closed, float thickness = 1.0f) const
 	{
@@ -92,7 +92,7 @@ struct ImDrawListScaled
 	}
 	inline void  PathBezierCurveTo(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, int num_segments = 0) const
 	{
-		drawList->PathBezierCurveTo(offset + VerticalFlip * p1 * scale, offset + VerticalFlip * p2 * scale, offset + VerticalFlip * p3 * scale, num_segments);
+		drawList->PathBezierCubicCurveTo(offset + VerticalFlip * p1 * scale, offset + VerticalFlip * p2 * scale, offset + VerticalFlip * p3 * scale, num_segments);
 	}
 	inline void  PathRect(const ImVec2& rect_min, const ImVec2& rect_max, float rounding = 0.0f, int rounding_corners = 0x0F) const
 	{

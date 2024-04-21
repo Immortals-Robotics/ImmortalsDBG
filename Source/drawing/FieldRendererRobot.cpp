@@ -22,8 +22,8 @@ void FieldRenderer::DrawRobots(const google::protobuf::RepeatedPtrField<SSL_Dete
 		sprintf(lNumberStr, "%x", robot.robot_id());
 
 		this->drawList->AddText(
-			ImGui::GetWindowFont(),
-			ImGui::GetWindowFontSize(),
+			ImGui::GetFont(),
+			ImGui::GetFontSize(),
 			position - ImVec2(this->robotRadius / 3.0f, -this->robotRadius / 1.75f),
 			lTextColor,
 			lNumberStr,

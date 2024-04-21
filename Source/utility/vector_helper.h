@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../3rdparty/imgui/imgui.h"
+#include "imgui.h"
 
 // Additions
 const ImVec2 operator +(const ImVec2& a, const ImVec2& b);

@@ -1,58 +1,69 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.22)
+
+set(USE_FOLDERS ON)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
+
 project(ImmortalsDBG)
-include("${CMAKE_SOURCE_DIR}/CMake/Helpers.cmake")
 
-set_project_paths()
-enable_parallel_build()
-enable_cpp14_support()
+find_package(raylib CONFIG REQUIRED)
+find_package(imgui CONFIG REQUIRED)
+find_package(rlimgui CONFIG REQUIRED)
+find_package(asio CONFIG REQUIRED)
+find_package(protobuf CONFIG REQUIRED)
 
-find_package(Bgfx REQUIRED)
-include_directories(${Bgfx_INCLUDE_DIRS})
+file(GLOB_RECURSE GEN_PROTO_DEF "Source/protos/*.proto")
 
-file(GLOB_RECURSE GEN_VERTEX_SHADER_SRC "Source/*.vsc")
-add_shader_generate_command(GEN_VERTEX_SHADER_SRC SHADER_HDRS)
+set(PROTO_SRCS)
+set(PROTO_HDRS)
 
-find_package(SDL2 REQUIRED)
-include_directories(${SDL2_INCLUDE_DIR})
+foreach(file ${GEN_PROTO_DEF})
+    get_filename_component(FILE_ABS ${file} ABSOLUTE)
+    get_filename_component(FILE_WE ${file} NAME_WE)
+    get_filename_component(FILE_PATH ${file} DIRECTORY)
 
-find_package(ZeroMQ REQUIRED)
-include_directories(${ZeroMQ_INCLUDE_DIR})
+    set(GEN_FILE_HEADER "${FILE_PATH}/${FILE_WE}.pb.h")
+    set(GEN_FILE_SOURCE "${FILE_PATH}/${FILE_WE}.pb.cc")
 
-find_package(Protobuf REQUIRED)
-include_directories(${PROTOBUF_INCLUDE_DIRS})
+    file(RELATIVE_PATH GEN_FILE_HEADER_REL ${CMAKE_CURRENT_SOURCE_DIR} ${GEN_FILE_HEADER})
+    file(RELATIVE_PATH GEN_FILE_SOURCE_REL ${CMAKE_CURRENT_SOURCE_DIR} ${GEN_FILE_SOURCE})
 
-file(GLOB_RECURSE GEN_PROTO_DEF "*.proto")
+    list(APPEND PROTO_SRCS ${GEN_FILE_SOURCE_REL})
+    list(APPEND PROTO_HDRS ${GEN_FILE_HEADER_REL})
 
-add_protobuf_generate_command(GEN_PROTO_DEF PROTO_SRCS PROTO_HDRS)
+    add_custom_command(
+      OUTPUT ${GEN_FILE_SOURCE}
+             ${GEN_FILE_HEADER}
+      COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
+      ARGS --proto_path=${FILE_PATH} --cpp_out=${FILE_PATH} ${FILE_ABS}
+      DEPENDS ${FILE_ABS}
+      COMMENT "Running C++ protocol buffer compiler on ${file}"
+      VERBATIM )
+endforeach()
 
-file(GLOB_RECURSE GEN_SOURCE_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Source/*.c" "Source/*.cpp" "/Source/*.cc" "/Source/*.cxx")
+file(GLOB_RECURSE GEN_SOURCE_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Source/*.c" "Source/*.cpp")
 file(GLOB_RECURSE GEN_HEADER_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Source/*.h" "Source/*.hpp")
-
-file(GLOB_RECURSE GEN_DEP_SOURCE_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "3rdparty/*.c" "3rdparty/*.cpp" "/3rdparty/*.cc" "/3rdparty/*.cxx")
-file(GLOB_RECURSE GEN_DEP_HEADER_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "3rdparty/*.h" "3rdparty/*.hpp")
 
 set(SOURCE_FILES
     ${GEN_HEADER_FILES}
     ${PROTO_HDRS}
-    ${GEN_DEP_HEADER_FILES}
     ${GEN_SOURCE_FILES}
     ${PROTO_SRCS}
-    ${GEN_DEP_SOURCE_FILES}
     ${SHADER_HDRS})
 
-add_executable(ImmortalsDBG ${SOURCE_FILES})
+add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
-set_files_group(SOURCE_FILES)
+target_compile_definitions(${PROJECT_NAME} PUBLIC DATA_DIR="${CMAKE_SOURCE_DIR}/data")
+target_compile_definitions(${PROJECT_NAME} PUBLIC LOG_DIR="${CMAKE_SOURCE_DIR}/log")
 
-if(MSVC)
-  target_link_libraries(ImmortalsDBG wsock32 ws2_32)
-endif()
-target_link_libraries(ImmortalsDBG ${PROTOBUF_LIBRARIES} ${Bgfx_LIBRARIES} ${SDL2_LIBRARY} ${ZeroMQ_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PRIVATE
+	raylib
+	imgui::imgui
+	rlimgui::rlimgui
+	protobuf::libprotobuf)
 
-if (MSVC)
-  add_custom_command(
-    TARGET ImmortalsDBG POST_BUILD                       # Adds a post-build event to ImmortalsDBG
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different  # which executes "cmake - E copy_if_different..."
-    ${SDL2_DLL}                                    # <--this is in-file
-    $<TARGET_FILE_DIR:ImmortalsDBG>)                     # <--this is out-file path
+if (WIN32)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC _WIN32_WINNT=_WIN32_WINNT_WIN10)
 endif()

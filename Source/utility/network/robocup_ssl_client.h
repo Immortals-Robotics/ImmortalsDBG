@@ -20,7 +20,7 @@
 //========================================================================
 #ifndef ROBOCUP_SSL_CLIENT_H
 #define ROBOCUP_SSL_CLIENT_H
-#include "netraw.h"
+
 #include <string>
 
 #include <mutex>
@@ -28,6 +28,7 @@
 #include "../../protos/messages_robocup_ssl_geometry.pb.h"
 #include "../../protos/messages_robocup_ssl_wrapper.pb.h"
 #include "../../protos/messages_robocup_ssl_refbox_log.pb.h"
+class UdpClient;
 using namespace std;
 /**
 	@author Author Name
@@ -37,7 +38,7 @@ class RoboCupSSLClient{
 protected:
   static const int MaxDataGramSize = 65536;
   char * in_buffer;
-  Net::UDP mc; // multicast client
+  std::unique_ptr<UdpClient> udp; // multicast client
   std::mutex mutex;
   int _port;
   string _net_address;
