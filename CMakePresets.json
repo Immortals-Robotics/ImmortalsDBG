@@ -34,16 +34,28 @@
 			}
 		},
 		{
-			"name": "macos-debug",
+			"name": "macos-base",
 			"inherits": "base",
+			"hidden": true,
 			"generator": "Ninja",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug"
-			},
 			"condition": {
 				"type": "equals",
 				"lhs": "${hostSystemName}",
 				"rhs": "Darwin"
+			}
+		},
+		{
+			"name": "macos-debug",
+			"inherits": "macos-base",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			}
+		},
+		{
+			"name": "macos-release",
+			"inherits": "macos-base",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release"
 			}
 		},
 		{
@@ -103,6 +115,10 @@
 			"configurePreset": "macos-debug"
 		},
 		{
+			"name": "macos-release",
+			"configurePreset": "macos-release"
+		},
+		{
 			"name": "windows-debug",
 			"configurePreset": "windows-debug"
 		},
@@ -119,6 +135,10 @@
 		{
 			"name": "macos-debug",
 			"configurePreset": "macos-debug"
+		},
+		{
+			"name": "macos-release",
+			"configurePreset": "macos-release"
 		},
 		{
 			"name": "windows-debug",
