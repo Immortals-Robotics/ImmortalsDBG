@@ -1,0 +1,9 @@
+{
+	"dependencies": [
+		"imgui",
+		"raylib",
+		"rlimgui",
+		"asio",
+		"protobuf"
+	]
+}

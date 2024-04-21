@@ -1,13 +1,2 @@
-CMakeCache.txt
-CMakeFiles
-CMakeScripts
-Makefile
-cmake_install.cmake
-install_manifest.txt
-Projects/
-3rdparty/protobuf/
 .idea
-*.fsb.h
-*.vsb.h
-*.pb.*
-3rdparty/protobuf/
+out

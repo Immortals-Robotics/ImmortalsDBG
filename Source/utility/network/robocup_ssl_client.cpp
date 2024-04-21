@@ -20,6 +20,8 @@
 //========================================================================
 #include "robocup_ssl_client.h"
 
+#include "udp_client.h"
+
 RoboCupSSLClient::RoboCupSSLClient(int port,
 	string net_address,
 	string net_interface)
@@ -37,28 +39,16 @@ RoboCupSSLClient::~RoboCupSSLClient()
 }
 
 void RoboCupSSLClient::close() {
-	mc.close();
+	udp.reset();
 }
 
 bool RoboCupSSLClient::open(bool blocking) {
 	close();
-	if (!mc.open(_port, true, true, blocking)) {
+
+	udp = std::make_unique<UdpClient>(_net_address, _port);
+
+	if (!udp->isConnected()) {
 		fprintf(stderr, "Unable to open UDP network port: %d\n", _port);
-		fflush(stderr);
-		return(false);
-	}
-
-	Net::Address multiaddr, interf;
-	multiaddr.setHost(_net_address.c_str(), _port);
-	if (_net_interface.length() > 0) {
-		interf.setHost(_net_interface.c_str(), _port);
-	}
-	else {
-		interf.setAny();
-	}
-
-	if (!mc.addMulticast(multiaddr, interf)) {
-		fprintf(stderr, "Unable to setup UDP multicast\n");
 		fflush(stderr);
 		return(false);
 	}
@@ -67,13 +57,9 @@ bool RoboCupSSLClient::open(bool blocking) {
 }
 
 bool RoboCupSSLClient::receive(SSL_WrapperPacket & packet) {
-	Net::Address src;
-	int r = 0;
-	r = mc.recv(in_buffer, MaxDataGramSize, src);
-	if (r > 0) {
+	const bool result = udp->receive(&packet);
+	if (result) {
 		fflush(stdout);
-		//decode packet:
-		return packet.ParseFromArray(in_buffer, r);
 	}
-	return false;
+	return result;
 }
