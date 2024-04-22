@@ -20,6 +20,7 @@ find_package(rlimgui CONFIG REQUIRED)
 find_package(asio CONFIG REQUIRED)
 find_package(protobuf CONFIG REQUIRED)
 
+find_path(HOMOG2D_INCLUDE_DIRS "homog2d.hpp")
 
 set(PROTOS_DIR protos)
 add_subdirectory(${PROTOS_DIR})
@@ -66,6 +67,8 @@ set(SOURCE_FILES
     ${SHADER_HDRS})
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+
+target_include_directories(${PROJECT_NAME} PUBLIC ${HOMOG2D_INCLUDE_DIRS})
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${PROTO_GEN_BASE_DIR}")
 

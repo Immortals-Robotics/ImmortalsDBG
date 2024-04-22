@@ -4,6 +4,7 @@
 		"raylib",
 		"rlimgui",
 		"asio",
-		"protobuf"
+		"protobuf",
+		"homog2d"
 	]
 }
