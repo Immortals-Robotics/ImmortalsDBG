@@ -56,7 +56,7 @@ bool RoboCupSSLClient::open(bool blocking) {
 	return(true);
 }
 
-bool RoboCupSSLClient::receive(SSL_WrapperPacket & packet) {
+bool RoboCupSSLClient::receive(Protos::SSL_WrapperPacket & packet) {
 	const bool result = udp->receive(&packet);
 	if (result) {
 		fflush(stdout);

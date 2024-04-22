@@ -20,33 +20,39 @@ find_package(rlimgui CONFIG REQUIRED)
 find_package(asio CONFIG REQUIRED)
 find_package(protobuf CONFIG REQUIRED)
 
-file(GLOB_RECURSE GEN_PROTO_DEF "Source/protos/*.proto")
+
+set(PROTOS_DIR protos)
+add_subdirectory(${PROTOS_DIR})
 
 set(PROTO_SRCS)
 set(PROTO_HDRS)
 
-foreach(file ${GEN_PROTO_DEF})
-    get_filename_component(FILE_ABS ${file} ABSOLUTE)
-    get_filename_component(FILE_WE ${file} NAME_WE)
-    get_filename_component(FILE_PATH ${file} DIRECTORY)
+set(PROTO_DEF_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${PROTOS_DIR})
+set(PROTO_GEN_BASE_DIR ${CMAKE_CURRENT_BINARY_DIR}/${PROTOS_DIR})
 
-    set(GEN_FILE_HEADER "${FILE_PATH}/${FILE_WE}.pb.h")
-    set(GEN_FILE_SOURCE "${FILE_PATH}/${FILE_WE}.pb.cc")
+foreach(file ${PROTO_FILES})
+	get_filename_component(FILE_ABS ${file} ABSOLUTE)  # Full path to file
+	get_filename_component(FILE_WE  ${file} NAME_WE)   # File name with neither the directory nor the longest extension
+	get_filename_component(FILE_DIR ${file} DIRECTORY) # Directory without file name
 
-    file(RELATIVE_PATH GEN_FILE_HEADER_REL ${CMAKE_CURRENT_SOURCE_DIR} ${GEN_FILE_HEADER})
-    file(RELATIVE_PATH GEN_FILE_SOURCE_REL ${CMAKE_CURRENT_SOURCE_DIR} ${GEN_FILE_SOURCE})
+	file(RELATIVE_PATH FILE_REL     ${PROTO_DEF_BASE_DIR} ${FILE_ABS})
+	file(RELATIVE_PATH FILE_DIR_REL ${PROTO_DEF_BASE_DIR} ${FILE_DIR})
 
-    list(APPEND PROTO_SRCS ${GEN_FILE_SOURCE_REL})
-    list(APPEND PROTO_HDRS ${GEN_FILE_HEADER_REL})
+	set(GEN_DIR "${PROTO_GEN_BASE_DIR}/${FILE_DIR_REL}")
+	set(GEN_FILE_HEADER "${GEN_DIR}/${FILE_WE}.pb.h")
+	set(GEN_FILE_SOURCE "${GEN_DIR}/${FILE_WE}.pb.cc")
 
-    add_custom_command(
-      OUTPUT ${GEN_FILE_SOURCE}
-             ${GEN_FILE_HEADER}
-      COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
-      ARGS --proto_path=${FILE_PATH} --cpp_out=${FILE_PATH} ${FILE_ABS}
-      DEPENDS ${FILE_ABS}
-      COMMENT "Running C++ protocol buffer compiler on ${file}"
-      VERBATIM )
+	list(APPEND PROTO_SRCS ${GEN_FILE_SOURCE})
+	list(APPEND PROTO_HDRS ${GEN_FILE_HEADER})
+
+	add_custom_command(
+	OUTPUT ${GEN_FILE_SOURCE}
+			${GEN_FILE_HEADER}
+	COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
+	ARGS --proto_path=${PROTO_DEF_BASE_DIR} --cpp_out=${PROTO_GEN_BASE_DIR} ${FILE_REL} 
+	DEPENDS ${FILE_ABS}
+	COMMENT "Running C++ protocol buffer compiler on ${FILE_REL}"
+	VERBATIM )
 endforeach()
 
 file(GLOB_RECURSE GEN_SOURCE_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Source/*.c" "Source/*.cpp")
@@ -61,6 +67,8 @@ set(SOURCE_FILES
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
+target_include_directories(${PROJECT_NAME} PUBLIC "${PROTO_GEN_BASE_DIR}")
+
 target_compile_definitions(${PROJECT_NAME} PUBLIC DATA_DIR="${CMAKE_SOURCE_DIR}/data")
 target_compile_definitions(${PROJECT_NAME} PUBLIC LOG_DIR="${CMAKE_SOURCE_DIR}/log")
 
@@ -73,3 +81,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 if (WIN32)
     target_compile_definitions(${PROJECT_NAME} PUBLIC _WIN32_WINNT=_WIN32_WINNT_WIN10)
 endif()
+
+target_precompile_headers(${PROJECT_NAME} PUBLIC ${PROTO_HDRS} "Source/pch.h")

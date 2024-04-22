@@ -21,13 +21,6 @@
 #ifndef ROBOCUP_SSL_CLIENT_H
 #define ROBOCUP_SSL_CLIENT_H
 
-#include <string>
-
-#include <mutex>
-#include "../../protos/messages_robocup_ssl_detection.pb.h"
-#include "../../protos/messages_robocup_ssl_geometry.pb.h"
-#include "../../protos/messages_robocup_ssl_wrapper.pb.h"
-#include "../../protos/messages_robocup_ssl_refbox_log.pb.h"
 class UdpClient;
 using namespace std;
 /**
@@ -51,7 +44,7 @@ public:
     ~RoboCupSSLClient();
     bool open(bool blocking=false);
     void close();
-    bool receive(SSL_WrapperPacket & packet);
+    bool receive(Protos::SSL_WrapperPacket & packet);
 
 };
 

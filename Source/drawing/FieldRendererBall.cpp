@@ -1,7 +1,7 @@
 #include "FieldRenderer.h"
 #include "../utility/colors.h"
 
-void FieldRenderer::DrawBalls(const google::protobuf::RepeatedPtrField<SSL_DetectionBall>& data) const
+void FieldRenderer::DrawBalls(const google::protobuf::RepeatedPtrField<Protos::SSL_DetectionBall>& data) const
 {
 	for (auto ball : data)
 	{
@@ -10,11 +10,11 @@ void FieldRenderer::DrawBalls(const google::protobuf::RepeatedPtrField<SSL_Detec
 	}
 }
 
-void FieldRenderer::DrawBalls(const google::protobuf::RepeatedPtrField<Immortals::Data::BallState>& data) const
+void FieldRenderer::DrawBalls(const google::protobuf::RepeatedPtrField<Protos::Immortals::Debug_Circle>& data) const
 {
 	for (auto ball : data)
 	{
-		this->drawList->AddCircleFilled(ImVec2(ball.position().x(), ball.position().y()), ballRadius, IMC_ORANGE, 10);
-		this->drawList->AddCircle(ImVec2(ball.position().x(), ball.position().y()), ballRadius+10.f, IMC_BLACK, 10);
+		this->drawList->AddCircleFilled(ImVec2(ball.x(), ball.y()), ballRadius, IMC_ORANGE, 10);
+		this->drawList->AddCircle(ImVec2(ball.x(), ball.y()), ballRadius+10.f, IMC_BLACK, 10);
 	}
 }

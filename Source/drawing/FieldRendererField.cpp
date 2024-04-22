@@ -7,7 +7,7 @@
 #include "../utility/vector_helper.h"
 #include "../utility/colors.h"
 
-void FieldRenderer::DrawFieldLegacy(const RoboCup2014Legacy::Geometry::SSL_GeometryFieldSize& data) const
+void FieldRenderer::DrawFieldLegacy(const Protos::RoboCup2014Legacy::Geometry::SSL_GeometryFieldSize& data) const
 {
 	// Field
 
@@ -92,7 +92,7 @@ void FieldRenderer::DrawFieldLegacy(const RoboCup2014Legacy::Geometry::SSL_Geome
 	this->drawList->PathLineTo(ImVec2(lFieldEndPos.x, lFieldCenter.y + data.goal_width() / 2));
 	this->drawList->PathStroke(IMC_WHITE, false, 2.f);
 }
-void FieldRenderer::DrawCameraCalibrations(const google::protobuf::RepeatedPtrField<SSL_GeometryCameraCalibration>& data) const
+void FieldRenderer::DrawCameraCalibrations(const google::protobuf::RepeatedPtrField<Protos::SSL_GeometryCameraCalibration>& data) const
 {
 
 }

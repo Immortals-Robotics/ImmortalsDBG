@@ -36,7 +36,7 @@ void FieldRenderer::SetWidgetProperties(const ImVec2 &pos, const ImVec2 &size)
 	CalculateZoom();
 }
 
-void FieldRenderer::SetFieldSizeLegacy(const RoboCup2014Legacy::Geometry::SSL_GeometryFieldSize& field)
+void FieldRenderer::SetFieldSizeLegacy(const Protos::RoboCup2014Legacy::Geometry::SSL_GeometryFieldSize& field)
 {
 	this->overallFieldSize.x = field.field_length() + 2 * (field.boundary_width());
 	this->overallFieldSize.y = field.field_width() + 2* (field.boundary_width());
