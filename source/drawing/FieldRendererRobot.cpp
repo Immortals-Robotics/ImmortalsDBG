@@ -1,7 +1,7 @@
 #include "FieldRenderer.h"
 #include "../utility/colors.h"
 
-void FieldRenderer::DrawRobots(const google::protobuf::RepeatedPtrField<SSL_DetectionRobot>& data, TeamColor color) const
+void FieldRenderer::DrawRobots(const google::protobuf::RepeatedPtrField<Protos::SSL_DetectionRobot> &data, TeamColor color) const
 {
 	auto lTextColor = color == Yellow ? IMC_BLACK : IMC_WHITE;
 	auto lBaseColor = color == Yellow ? IMC_YELLOW : IMC_BLUE;

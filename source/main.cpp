@@ -1,35 +1,19 @@
-#include "raylib.h"
-#include "raymath.h"
-
-#include "imgui.h"
-#include "rlimgui/rlImGui.h"
-
-#include <list>
-#include <thread>
-#include <atomic>
-
-#include "protos/messages_robocup_ssl_wrapper.pb.h"
 #include "drawing/FieldRenderer.h"
-
-#include "utility/network/robocup_ssl_client.h"
-
-#include "protos/messages_immortals_world_state.pb.h"
-
-#include "com/reader.h"
+#include "utility/network/udp_client.h"
 
 int m_width = 1600;
 int m_height = 900;
 
-RoboCup2014Legacy::Geometry::SSL_GeometryFieldSize* ssl_field;
-SSL_WrapperPacket* ssl_packet;
-SSL_WrapperPacket* ssl_packet_off;
+Protos::RoboCup2014Legacy::Geometry::SSL_GeometryFieldSize* ssl_field;
+Protos::SSL_WrapperPacket* ssl_packet;
+Protos::SSL_WrapperPacket* ssl_packet_off;
 FieldRenderer* field_renderer;
-RoboCupSSLClient* sslClient;
-Immortals::Data::WorldState* world_state;
-Immortals::Data::WorldState* world_state_off;
+UdpClient* sslClient;
+Protos::Immortals::Debug_Draw* world_state;
+Protos::Immortals::Debug_Draw* world_state_off;
 
-mutex vision_mutex;
-mutex reality_mutex;
+std::mutex vision_mutex;
+std::mutex reality_mutex;
 
 void DrawSpeedGraph();
 
@@ -82,7 +66,7 @@ void update()
 
 		vision_mutex.unlock();
 		reality_mutex.lock();
-		field_renderer->DrawBalls(world_state->balls());
+		field_renderer->DrawBalls(world_state->circle());
 		reality_mutex.unlock();
 
 		ImGui::End();
@@ -131,7 +115,7 @@ int main(int argc, char *argv[])
 	
 	field_renderer = new FieldRenderer();
 
-	ssl_field = new RoboCup2014Legacy::Geometry::SSL_GeometryFieldSize();
+	ssl_field = new Protos::RoboCup2014Legacy::Geometry::SSL_GeometryFieldSize();
 	ssl_field->set_field_length(9000);
 	ssl_field->set_field_width(6000);
 	ssl_field->set_boundary_width(700);
@@ -144,8 +128,8 @@ int main(int argc, char *argv[])
 
 	field_renderer->SetFieldSizeLegacy(*ssl_field);
 
-	ssl_packet_off = new SSL_WrapperPacket();
-	ssl_packet = new SSL_WrapperPacket();
+	ssl_packet_off = new Protos::SSL_WrapperPacket();
+	ssl_packet = new Protos::SSL_WrapperPacket();
 	auto ball = ssl_packet->mutable_detection()->add_balls();
 	ball->set_x(0.f);
 	ball->set_y(0.f);
@@ -159,18 +143,17 @@ int main(int argc, char *argv[])
 	robot->set_y(2460);
 	robot->set_confidence(0.95);
 
-	sslClient = new RoboCupSSLClient();
-	sslClient->open(true);
+	sslClient = new UdpClient("224.5.23.2", 10006);
 
-	atomic<bool> running(true);
+	std::atomic<bool> running(true);
 
 	auto vision_func = [&]()
 	{
-		map<uint32_t, SSL_DetectionFrame> frame_map;
-		SSL_WrapperPacket tmp_ssl_packet;
+		std::map<uint32_t, Protos::SSL_DetectionFrame> frame_map;
+		Protos::SSL_WrapperPacket tmp_ssl_packet;
 
 		while (running) {
-			sslClient->receive(tmp_ssl_packet);
+			sslClient->receive(&tmp_ssl_packet);
 
 			if (tmp_ssl_packet.has_detection())
 			{
@@ -194,15 +177,15 @@ int main(int argc, char *argv[])
 			}
 
 			vision_mutex.lock();
-			swap(ssl_packet, ssl_packet_off);
+			std::swap(ssl_packet, ssl_packet_off);
 			vision_mutex.unlock();
 		}
 	};
 
-	world_state = new Immortals::Data::WorldState();
-	world_state_off = new Immortals::Data::WorldState();
+	world_state = new Protos::Immortals::Debug_Draw();
+	world_state_off = new Protos::Immortals::Debug_Draw();
 
-	thread vision_thread(vision_func);
+	std::thread vision_thread(vision_func);
 
 	while (!WindowShouldClose())
 	{

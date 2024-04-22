@@ -1,13 +1,9 @@
-//
-// Created by lordhippo on 5/18/16.
-//
-
 #include "FieldRenderer.h"
 
 #include "../utility/vector_helper.h"
 #include "../utility/colors.h"
 
-void FieldRenderer::DrawFieldLegacy(const RoboCup2014Legacy::Geometry::SSL_GeometryFieldSize& data) const
+void FieldRenderer::DrawFieldLegacy(const Protos::RoboCup2014Legacy::Geometry::SSL_GeometryFieldSize &data) const
 {
 	// Field
 
@@ -35,7 +31,7 @@ void FieldRenderer::DrawFieldLegacy(const RoboCup2014Legacy::Geometry::SSL_Geome
 	this->drawList->PathLineTo(lFieldBorderStartPos + ImVec2(data.boundary_width() + data.field_length() + data.referee_width(), -data.boundary_width() - data.field_width() - data.referee_width()));
 	this->drawList->PathLineTo(lFieldBorderStartPos + ImVec2(data.boundary_width() - data.referee_width(), -data.boundary_width() - data.field_width() - data.referee_width()));
 	this->drawList->PathStroke(IMC_BLACK, true, 5.f);
-	
+
 	// Midline
 	this->drawList->AddLine(
 		ImVec2(lFieldCenter.x, lFieldStartPos.y),
@@ -55,7 +51,7 @@ void FieldRenderer::DrawFieldLegacy(const RoboCup2014Legacy::Geometry::SSL_Geome
 		-0.5f * IM_PI,
 		0.f);
 	this->drawList->PathLineTo(ImVec2(lFieldStartPos.x + data.defense_radius(),
-		lFieldCenter.y - data.defense_stretch() / 2));
+									  lFieldCenter.y - data.defense_stretch() / 2));
 	this->drawList->PathArcTo(
 		ImVec2(lFieldStartPos.x, lFieldCenter.y - data.defense_stretch() / 2),
 		data.defense_radius(),
@@ -70,7 +66,7 @@ void FieldRenderer::DrawFieldLegacy(const RoboCup2014Legacy::Geometry::SSL_Geome
 		-0.5f * IM_PI,
 		-1.f * IM_PI);
 	this->drawList->PathLineTo(ImVec2(lFieldEndPos.x - data.defense_radius(),
-		lFieldCenter.y - data.defense_stretch() / 2));
+									  lFieldCenter.y - data.defense_stretch() / 2));
 	this->drawList->PathArcTo(
 		ImVec2(lFieldEndPos.x, lFieldCenter.y - data.defense_stretch() / 2),
 		data.defense_radius(),
@@ -82,7 +78,7 @@ void FieldRenderer::DrawFieldLegacy(const RoboCup2014Legacy::Geometry::SSL_Geome
 	this->drawList->PathLineTo(ImVec2(lFieldStartPos.x, lFieldCenter.y - data.goal_width() / 2));
 	this->drawList->PathLineTo(ImVec2(lFieldStartPos.x - data.goal_depth(), lFieldCenter.y - data.goal_width() / 2));
 	this->drawList->PathLineTo(ImVec2(lFieldStartPos.x - data.goal_depth(), lFieldCenter.y + data.goal_width() / 2));
-	this->drawList->PathLineTo(ImVec2(lFieldStartPos.x , lFieldCenter.y + data.goal_width() / 2));
+	this->drawList->PathLineTo(ImVec2(lFieldStartPos.x, lFieldCenter.y + data.goal_width() / 2));
 	this->drawList->PathStroke(IMC_WHITE, false, 2.f);
 
 	this->drawList->PathClear();
@@ -92,7 +88,6 @@ void FieldRenderer::DrawFieldLegacy(const RoboCup2014Legacy::Geometry::SSL_Geome
 	this->drawList->PathLineTo(ImVec2(lFieldEndPos.x, lFieldCenter.y + data.goal_width() / 2));
 	this->drawList->PathStroke(IMC_WHITE, false, 2.f);
 }
-void FieldRenderer::DrawCameraCalibrations(const google::protobuf::RepeatedPtrField<SSL_GeometryCameraCalibration>& data) const
+void FieldRenderer::DrawCameraCalibrations(const google::protobuf::RepeatedPtrField<Protos::SSL_GeometryCameraCalibration> &data) const
 {
-
 }
