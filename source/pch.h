@@ -26,3 +26,4 @@
 #include <rlimgui/rlImGui.h>
 
 #include <homog2d.hpp>
+using namespace h2d;
