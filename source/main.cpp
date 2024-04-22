@@ -1,15 +1,5 @@
-#include "raylib.h"
-#include "raymath.h"
-
-#include "imgui.h"
-#include "rlimgui/rlImGui.h"
-
-#include <list>
-#include <thread>
-#include <atomic>
-
 #include "drawing/FieldRenderer.h"
-#include "utility/network/robocup_ssl_client.h"
+#include "utility/network/udp_client.h"
 
 int m_width = 1600;
 int m_height = 900;
@@ -18,12 +8,12 @@ Protos::RoboCup2014Legacy::Geometry::SSL_GeometryFieldSize* ssl_field;
 Protos::SSL_WrapperPacket* ssl_packet;
 Protos::SSL_WrapperPacket* ssl_packet_off;
 FieldRenderer* field_renderer;
-RoboCupSSLClient* sslClient;
+UdpClient* sslClient;
 Protos::Immortals::Debug_Draw* world_state;
 Protos::Immortals::Debug_Draw* world_state_off;
 
-mutex vision_mutex;
-mutex reality_mutex;
+std::mutex vision_mutex;
+std::mutex reality_mutex;
 
 void DrawSpeedGraph();
 
@@ -153,18 +143,17 @@ int main(int argc, char *argv[])
 	robot->set_y(2460);
 	robot->set_confidence(0.95);
 
-	sslClient = new RoboCupSSLClient();
-	sslClient->open(true);
+	sslClient = new UdpClient("224.5.23.2", 10006);
 
-	atomic<bool> running(true);
+	std::atomic<bool> running(true);
 
 	auto vision_func = [&]()
 	{
-		map<uint32_t, Protos::SSL_DetectionFrame> frame_map;
+		std::map<uint32_t, Protos::SSL_DetectionFrame> frame_map;
 		Protos::SSL_WrapperPacket tmp_ssl_packet;
 
 		while (running) {
-			sslClient->receive(tmp_ssl_packet);
+			sslClient->receive(&tmp_ssl_packet);
 
 			if (tmp_ssl_packet.has_detection())
 			{
@@ -188,7 +177,7 @@ int main(int argc, char *argv[])
 			}
 
 			vision_mutex.lock();
-			swap(ssl_packet, ssl_packet_off);
+			std::swap(ssl_packet, ssl_packet_off);
 			vision_mutex.unlock();
 		}
 	};
@@ -196,7 +185,7 @@ int main(int argc, char *argv[])
 	world_state = new Protos::Immortals::Debug_Draw();
 	world_state_off = new Protos::Immortals::Debug_Draw();
 
-	thread vision_thread(vision_func);
+	std::thread vision_thread(vision_func);
 
 	while (!WindowShouldClose())
 	{

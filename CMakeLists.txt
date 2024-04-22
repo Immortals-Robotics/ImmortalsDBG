@@ -55,8 +55,8 @@ foreach(file ${PROTO_FILES})
 	VERBATIM )
 endforeach()
 
-file(GLOB_RECURSE GEN_SOURCE_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Source/*.c" "Source/*.cpp")
-file(GLOB_RECURSE GEN_HEADER_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Source/*.h" "Source/*.hpp")
+file(GLOB_RECURSE GEN_SOURCE_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "source/*.c" "source/*.cpp")
+file(GLOB_RECURSE GEN_HEADER_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "source/*.h" "source/*.hpp")
 
 set(SOURCE_FILES
     ${GEN_HEADER_FILES}
@@ -82,4 +82,4 @@ if (WIN32)
     target_compile_definitions(${PROJECT_NAME} PUBLIC _WIN32_WINNT=_WIN32_WINNT_WIN10)
 endif()
 
-target_precompile_headers(${PROJECT_NAME} PUBLIC ${PROTO_HDRS} "Source/pch.h")
+target_precompile_headers(${PROJECT_NAME} PUBLIC ${PROTO_HDRS} "source/pch.h")
